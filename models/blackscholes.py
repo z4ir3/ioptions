@@ -157,7 +157,6 @@ class BSOption:
             S = argv[0]
         except:
             S = self.S
-        
         if self.CP == "C":
             # Call Option
             if self.T > 0:
@@ -177,18 +176,22 @@ class BSOption:
                 # The Put has expired
                 return max(self.K - S, 0)
       
-    def delta(self) -> float:
+    def delta(self, *argv) -> float:
         """
         Black-Scholes pricing model - Delta
-        """    
+        """  
+        try:
+            S = argv[0]
+        except:
+            S = self.S 
         if self.CP == "C":
             # Call Option
             if self.T > 0:
                 # The Call has not expired yet
-                return np.exp(-self.q*self.T) * self.N(self._d1()) 
+                return np.exp(-self.q*self.T) * self.N(self._d1(S)) 
             else:
                 # The Call has expired
-                if self.price() > 0:
+                if self.price(S) > 0:
                     return +1
                 else: 
                     return 0     
@@ -196,10 +199,10 @@ class BSOption:
             # Put Option
             if self.T > 0:
                 # The Put has not expired yet
-                return np.exp(-self.q*self.T) * self.N(self._d1()) - 1
+                return np.exp(-self.q*self.T) * self.N(self._d1(S)) - 1
             else:
                 # The Put has expired
-                if self.price() > 0:
+                if self.price(S) > 0:
                     return -1
                 else:             
                     return 0

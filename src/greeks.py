@@ -3,6 +3,9 @@
 
 import streamlit as st
 
+from models.blackscholes import BSOption
+
+
 def dbpage_greeks():
     """
     """
@@ -10,6 +13,97 @@ def dbpage_greeks():
     st.title("The Black-Scholes Option Playgound")
     st.header("Option Greeks")
     st.write("---")
+
+    par1, par2, par3, par4 = st.columns([1,1,0.5,0.5], gap="small") 
+    with par1:
+        # Call or Put price
+        cp = st.selectbox(
+            label = "Option type",
+            options = ["Call","Put"],
+            index = 0,
+            key = "option-type"
+        )
+        CP = "C" if cp == "Call" else "P" 
+    with par2:
+        # Strike price 
+        K = st.number_input(
+            label = "Option strike",
+            min_value = 0.1,
+            format = "%f", 
+            value = 100.0,
+            placeholder = None,
+            help = "'Exercise' price of the option",
+            key = "strike"
+            # on_change=
+        ) 
+    with par3:
+        # Expiration type
+        TType = st.selectbox(
+            label = "Expiration type",
+            options = ["Days","Years"],
+            index = 0,
+            key = "dte-type"
+        ) 
+    with par4:
+        # Expiration  
+        ff = "%d" if TType == "Days" else "%f"
+        minv = 1 if TType == "Days" else 0.0028
+        maxv = 1825 if TType == "Days" else 5.0
+        vval = 90 if TType == "Days" else 0.25
+        T = st.number_input(
+            label = "Expiration (T)",
+            min_value = minv,
+            max_value = maxv,
+            format = ff,
+            value = vval,
+            help = None,
+            key = "dte"
+            # on_change=
+        ) 
+
+    par1, par2, par3 = st.columns(3) #[1,1,1], gap="small") 
+    with par1:
+        # Volatility (%)
+        v = st.number_input(
+            label = "Volatility (in percentage) (v)",
+            min_value = 1.0,
+            max_value = 99.9,
+            format = "%f",
+            value = 30.0,
+            help = "'Implied' Volatility",
+            key = "volatility"
+            # on_change=
+        ) 
+    with par2:
+        # Interest Rate (%)
+        r = st.number_input(
+            label = "Interest Rate (in percentage) (r)",
+            min_value = None,
+            max_value = None,
+            format = "%f",
+            value = 3.5,
+            help = None,
+            key = "interest-rate"
+            # on_change=
+        ) 
+    with par3:
+        # Dividend Yield
+        q = st.number_input(
+            label = "Dividend Yield (q)",
+            min_value = None,
+            max_value = None,
+            format = "%f",
+            value = 0.0,
+            help = None,
+            key = "div-yield"
+            # on_change=
+        )
+
+    Option = BSOption(CP, 98, K, r/100, T, v/100, q)
+    st.write( Option.price() ) 
+    st.write( Option.delta() ) 
+
+    
 
 
     # st.header("Option Greeks")
