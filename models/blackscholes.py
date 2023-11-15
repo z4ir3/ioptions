@@ -290,10 +290,10 @@ class BSOption:
         }
         return grk
     
-    def _underlying_set(
+    def underlying_set(
             self, 
             bnd: float = 0.4, 
-            nprices: int = 100,
+            npr: int = 10,
             *argv
         ) -> list:
         """
@@ -307,14 +307,20 @@ class BSOption:
             S = self.S
         Smin = S * (1 - bnd)
         Smax = S * (1 + bnd)
-        SS = np.linspace(Smin,S,nprices).tolist() + np.linspace(Smax,S,nprices)[1:].tolist()
+        SS = np.linspace(Smin,S,npr).tolist() + np.linspace(S,Smax,npr)[1:].tolist()
         return SS
     
-    def setprices(self) -> pd.Series:
+    def oprices(self, ps: int = "P") -> pd.Series:
         """
-        Generate a pd.Series of option prices using 
-        the set of the generated underlying prices 
+        Generate a pd.Series of option prices or greenks using 
+        for a generated underlying prices 
         """
-        oprices = [self.price(s) for s in self._underlying_set()]
-        oprices = pd.Series(oprices, index=self._underlying_set())
-        return oprices 
+        if ps == "P":
+            name = "Price"
+            ops = [self.price(s) for s in self.underlying_set()]
+        elif ps == "D":
+            name = "Delta"
+            ops = [self.delta(s) for s in self.underlying_set()]
+        ops = pd.Series(ops, index=self.underlying_set())
+        ops.name = name
+        return ops 

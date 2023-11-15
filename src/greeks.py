@@ -1,18 +1,32 @@
 """
 """
-
 import streamlit as st
+
+import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+import plotly.io as pio
+pio.renderers.default = "browser"
+import plotly.graph_objs as go 
 
 from models.blackscholes import BSOption
 
 
-def dbpage_greeks():
+def dbpage_greeks(
+    nss: int = 20
+):
     """
     """
     # Page title
     st.title("The Black-Scholes Option Playgound")
     st.header("Option Greeks")
-    st.write("---")
+    # st.write("---")
+
+
+
+
 
     par1, par2, par3, par4 = st.columns([1,1,0.5,0.5], gap="small") 
     with par1:
@@ -47,19 +61,21 @@ def dbpage_greeks():
     with par4:
         # Expiration  
         ff = "%d" if TType == "Days" else "%f"
-        minv = 1 if TType == "Days" else 0.0028
-        maxv = 1825 if TType == "Days" else 5.0
+        minvt = 1 if TType == "Days" else 0.0028
+        maxvt = 1825 if TType == "Days" else 5.0
         vval = 90 if TType == "Days" else 0.25
         T = st.number_input(
             label = "Expiration (T)",
-            min_value = minv,
-            max_value = maxv,
+            min_value = minvt,
+            max_value = maxvt,
             format = ff,
             value = vval,
             help = None,
             key = "dte"
             # on_change=
-        ) 
+        )
+        if TType == "Days": 
+            T = T / 365
 
     par1, par2, par3 = st.columns(3) #[1,1,1], gap="small") 
     with par1:
@@ -74,6 +90,7 @@ def dbpage_greeks():
             key = "volatility"
             # on_change=
         ) 
+        v = v / 100
     with par2:
         # Interest Rate (%)
         r = st.number_input(
@@ -85,7 +102,8 @@ def dbpage_greeks():
             help = None,
             key = "interest-rate"
             # on_change=
-        ) 
+        )
+        r = r / 100
     with par3:
         # Dividend Yield
         q = st.number_input(
@@ -99,9 +117,145 @@ def dbpage_greeks():
             # on_change=
         )
 
-    Option = BSOption(CP, 98, K, r/100, T, v/100, q)
-    st.write( Option.price() ) 
-    st.write( Option.delta() ) 
+
+
+    st.sidebar.slider(
+        label = f"Time-to-Expiration ({TType})", 
+        min_value = 0 if TType == "Days" else 0.0, 
+        max_value = maxvt if TType == "Days" else float(maxvt), 
+        value = int(T*365) if TType == "Days" else float(T), 
+        # step = None, 
+        # format = None, 
+        key = None, 
+        help = None, 
+        # on_change = None
+    )
+
+
+
+
+
+
+
+    # Initialize the Option (ATM, S = K)
+    # Option = BSOption(CP=CP, S=K, K=K, T=T, r=r, v=v, q=q)   
+    # st.write( Option.price() )
+
+
+    # oprices = Option.oprices()
+    # # st.write( Option.price() ) 
+    # st.write( Option.delta() ) 
+    # st.write( oprices ) 
+
+    Sset = np.linspace(get_Smin(K),get_Smax(K),nss)
+    # st.write( Sset ) 
+
+    options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in Sset]
+
+    # st.write( oprices ) 
+    # st.write( oprices ) 
+
+    plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
+    with plot1:   
+        oprices = [o.price() for o in options]
+        oprices = pd.Series(oprices, index=Sset, name="Price")
+        fig = plotgreeks(oprices, K=K, yaxside="left")
+        st.plotly_chart(fig, use_container_width=True)
+    with plot2:
+        odeltas = [o.delta() for o in options]
+        odeltas = pd.Series(odeltas, index=Sset, name="Delta")    
+        fig = plotgreeks(odeltas, K=K, yaxside="right")
+        st.plotly_chart(fig, use_container_width=True) #, theme="streamlit")
+
+
+
+@staticmethod 
+def get_Smin(
+    n: float, 
+    bnd: float = 0.60
+) -> float:
+    """
+    """
+    return round(n * (1 - bnd), 0)
+
+def get_Smax(
+    n: float, 
+    bnd: float = 0.60
+) -> float:
+    """
+    """
+    return round(n * (1 + bnd), 0)
+
+
+def plotgreeks(
+    data: pd.Series,
+    K: float,
+    xaxside: str = "bottom",
+    yaxside: str = "left"
+):
+    """
+    """
+    # Create figure
+    fig = go.Figure()
+
+    # Plot
+    fig.add_trace(
+        go.Scatter(
+            x = data.index,
+            y = data.values, 
+            name = data.name,
+            line = dict(
+                # color = plotpalette[ii],
+                width = 1.2, 
+                dash = 'solid'
+            )
+        )
+    )
+    # Update layout
+    fig.update_layout(
+        # title = {"text": "KKK", "font_size": 22},
+        # template = "plotly_dark" if plotlypalette == "dark" else "plotly",
+        # shapedefaults = {'line': {'color': '#2a3f5f'}},
+        xaxis = dict(title = f"Underlying S (K={K})", side = xaxside),
+        yaxis = dict(title = f"{data.name}", side = yaxside),
+        hovermode = "x",  
+        hoverlabel = dict(
+            # bgcolor = "white",
+            font_size = 14,
+            # font_family = "Rockwell"
+        ),
+        autosize = True,
+        legend = dict(
+            yanchor = "top",
+            y = 0,#0.99,
+            xanchor = "left",
+            x = 1, #0.01,
+            # bgcolor = "#E6E6E6",
+            # font_color = "#000000",
+            # borderwidth = 0
+        ),
+        plot_bgcolor = "#E6E6E6",
+        legend_bgcolor = "#E6E6E6",
+        legend_font_color = "#000000",
+        legend_borderwidth = 0,
+        margin_pad = 0, 
+        width = 500,  # Specify the width of the plot in pixels
+        height = 300,  # Specify the height of the plot in pixels
+        margin = dict(l=0, r=0, t=50, b=30)  # Set margins around the plot
+    )
+    fig.update_xaxes(
+        showgrid = True,
+        gridcolor = "#EEF4F4",
+        # rangeslider_thickness = 0.08, # a percentage of the overall figure size 
+    )
+    fig.update_yaxes(
+        showgrid = True,
+        gridcolor = "#EEF4F4",
+        # griddash="dot",
+        # title_standoff=100
+    )
+ 
+    return fig
 
     
 
