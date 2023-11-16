@@ -207,48 +207,60 @@ class BSOption:
                 else:             
                     return 0
 
-    def llambda(self) -> float:
+    def llambda(self, *argv) -> float:
         """
         Black-Scholes pricing model - Lambda
         """
+        try:
+            S = argv[0]
+        except:
+            S = self.S
         if self.CP == "C":
             # Call option
-            if self.delta() < 1e-10 or self.price() < 1e-10:
+            if self.delta(S) < 1e-10 or self.price(S) < 1e-10:
                 return +np.inf
             else:
-                return self.delta() * self.S / self.price()
+                return self.delta(S) * self.S / self.price(S)
         else:
             # Put option 
-            if self.delta() > -1e-10 or self.price() < 1e-10:
+            if self.delta(S) > -1e-10 or self.price(S) < 1e-10:
                 return -np.inf
             else:
-                return self.delta() * self.S / self.price()
+                return self.delta(S) * self.S / self.price(S)
                      
-    def gamma(self) -> float:
+    def gamma(self, *argv) -> float:
         """
         Black-Scholes pricing model - Gamma 
-        """    
+        """  
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
         # Gamma is the same for both Call and Put            
         if self.T > 0:
             # The Option has not expired yet
-            return + np.exp(-self.q*self.T) * self.N(self._d1(), cum=0) \
+            return + np.exp(-self.q*self.T) * self.N(self._d1(S), cum=0) \
                    / (self.S * self.v * np.sqrt(self.T))
         else:
             # The Option has expired
             return 0
     
-    def theta(self) -> float:
+    def theta(self, *argv) -> float:
         """
         Black-Scholes pricing model - Theta
         """
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
         if self.CP == "C":
             # Call Option
             if self.T > 0:
                 # The Call has not expired yet
-                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(), cum=0) \
+                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) \
                        / (2*np.sqrt(self.T)) \
-                       + self.q*np.exp(-self.q*self.T) * self.S * self.N(self._d1())   \
-                       - self.r*np.exp(-self.r*self.T) * self.K * self.N(self._d2())
+                       + self.q*np.exp(-self.q*self.T) * self.S * self.N(self._d1(S))   \
+                       - self.r*np.exp(-self.r*self.T) * self.K * self.N(self._d2(S))
             else:
                 # The Call has expired
                 return 0    
@@ -256,23 +268,27 @@ class BSOption:
             # Put Option
             if self.T > 0:
                 # The Put has not expired yet
-                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(), cum=0) \
+                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) \
                        / (2*np.sqrt(self.T)) \
-                       - self.q*np.exp(-self.q*self.T) * self.S * (1 - self.N(self._d1()))   \
-                       + self.r*np.exp(-self.r*self.T) * self.K * (1 - self.N(self._d2()))
+                       - self.q*np.exp(-self.q*self.T) * self.S * (1 - self.N(self._d1(S)))   \
+                       + self.r*np.exp(-self.r*self.T) * self.K * (1 - self.N(self._d2(S)))
             else:
                 # The Put has expired
                 return 0
 
-    def vega(self) -> float:
+    def vega(self, *argv) -> float:
         """
         Black-Scholes pricing model - Vega 
         """    
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
         # Vega is the same for both Call and Put            
         if self.T > 0:
             # The Option has not expired yet
             return + np.exp(-self.q*self.T) * self.S * np.sqrt(self.T) \
-                   * self.N(self._d1(), cum=False) 
+                   * self.N(self._d1(S), cum=False) 
         else:
             # The Option has expired
             return 0          
@@ -280,7 +296,7 @@ class BSOption:
     def greeks(self) -> dict:
         """
         Black-Scholes pricing model - All greeks
-        """   
+        """
         grk = {
             "Lambda": round(BSOption.llambda(self), 2),
             "Delta": round(BSOption.delta(self), 2),
@@ -291,11 +307,11 @@ class BSOption:
         return grk
     
     def underlying_set(
-            self, 
-            bnd: float = 0.4, 
-            npr: int = 10,
-            *argv
-        ) -> list:
+        self, 
+        bnd: float = 0.4, 
+        npr: int = 10,
+        *argv
+    ) -> list:
         """
         Generate a set of underlying prices lower and higher 
         than the current input underlying price.

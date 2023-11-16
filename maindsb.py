@@ -52,6 +52,7 @@ def main():
             ], # icons from the bootstrap webpage
             default_index = 0,
             orientation = "vertical"
+            # orientation = "horizontal"
         )
 
     if PageSelected == "Home":
