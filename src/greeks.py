@@ -28,6 +28,8 @@ def dbpage_greeks(
 
 
 
+
+
     par1, par2, par3, par4 = st.columns([0.5,0.5,0.5,0.5], gap="small") 
     with par1:
         # Call or Put price
@@ -74,14 +76,81 @@ def dbpage_greeks(
     
     
     
-    sens = st.multiselect(
-        label = "Choose Price or Greeks",
-        options = ["Price","Delta","Gamma"], 
-        default = None, 
-        key = None, 
-        help = None, 
-        placeholder="Choose an option", 
-    )
+    # sensname = st.multiselect(
+    #     label = "Choose Price or Greeks",
+    #     options = ["Price","Delta","Gamma","Vega","Theta","Lambda"], 
+    #     default = "Price", 
+    #     key = None, 
+    #     help = None, 
+    #     placeholder="Choose an option", 
+    # )
+    # sensnamecol = st.beta_columns(3)
+    # with sensnamecol[0]:
+    #     st.write(10)
+    # with sensnamecol[1]:
+    #     st.write(100)
+
+
+
+    # ncol = st.sidebar.number_input("Number of columns", 0, 20, 1)
+    # wcol = st.sidebar.number_input("Wrap at column", 1, 2, 1)
+
+    # cols = st.columns(ncol)
+
+    # for i in range(ncol):
+    #     st.write(i, i % wcol)
+
+    #     col = cols[i%wcol]
+    #     col.selectbox(f"Input # {i}",[1,2,3], key=i)
+
+
+
+    # # sidebar_counter = 9
+    # column_list = st.columns(len(sensname))
+    # for i in range(len(sensname)):
+    #     # if (idx>1):
+    #     #     i = idx - 2*(idx-1)
+    #     st.write(i, i % 3)
+    #     #     column_list[i % 2].selectbox(f"Input # {i}",[1,2,3], key=idx)
+    #     # else:
+    #     #     column_list[idx % 2].selectbox(f"Input # {idx}",[1,2,3], key=idx)
+
+    #     column_list[i % 3].selectbox(f"Input # {i}",[1,2,3], key=i)
+
+
+    # # sidebar_counter = 9
+    # column_list = st.columns(len(sensname))
+    # for i in range(len(sensname)):
+    #     st.write(i, i % 2)
+    #     if i % 2 == 0:
+    #         controw = st.container()
+    #         controw.column_list[i%2].selectbox(f"Input # {i}",[1,2,3], key=i*2)
+    #     else:
+    #         column_list[i%2].selectbox(f"Input # {i}",[1,2,3], key="nn")
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+    # # st.write(sensname)
+    # # st.write(sensname[0])
+    # test = [ss for ss in sensname] 
+    # st.write(test)
+    # for ss in sensname:
+    #     print(ss)
+    # if "Price" in test:
+    #     st.write("ok") 
 
 
 
@@ -156,98 +225,157 @@ def dbpage_greeks(
 
 
 
+    # Set up Options
+    sensname = ["Price","Delta","Gamma","Vega","Theta","Lambda"]
+    uset = np.linspace(get_Smin(K),get_Smax(K),nss)
+    options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+    sensval = {k: dict() for k in sensname}
+    # oprices = pd.Series([o.price() for o in options], index=uset, name="Price")
+    # odeltas = pd.Series([o.delta() for o in options], index=uset, name="Delta")    
+    for k in sensval:
+        sensval[k] = pd.Series([o.greeks[k] for o in options], index=uset, name=k)
 
 
 
 
 
 
-    # oprices = Option.oprices()
-    # # st.write( Option.price() ) 
-    # st.write( Option.delta() ) 
-    # st.write( oprices ) 
 
-    Sset = np.linspace(get_Smin(K),get_Smax(K),nss)
-    # st.write( Sset ) 
 
-    options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in Sset]
 
-    # st.write( oprices ) 
-    # st.write( oprices ) 
+
+
+
+
+
+    # # Plots 
+    # for idx, ss in enumerate(sensname):
+        
+    #     len(sensname)
+        
+        # if "Price "
+
+    ATM = {k: dict() for k in sensname}
+    with st.container():
+        atms = st.columns(len(sensname))
+        for idx, ss in enumerate(sensname): 
+                
+            # Plot a marker for the ATM data 
+            atmidx = np.argmin(pd.Series(oprices.index).apply(lambda x: abs(x - K)))
+            ATM[ss]["x"] = [oprices.index[atmidx]]
+            ATM[ss]["y"] = [oprices.values[atmidx]]
+
+            with atms[idx]:
+                st.metric(
+                    label = f"ATM {ss}", 
+                    value = f"{ATM[ss]['y'][0]}"
+                )
+
+
+
+
 
     # Price and Delta
     plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
     with plot1:   
-        oprices = [o.price() for o in options]
-        oprices = pd.Series(oprices, index=Sset, name="Price")
+        # oprices = pd.Series([o.price() for o in options], index=uset, name="Price")
+        sname = oprices.name
         fig = _plotgreeks(
             oprices, 
             CP = CP,
             K = K, 
-            lcol = dbcol(oprices.name)
+            lcol = dbcol(sname),
+            atmv = (ATM[sname]["x"], ATM[sname]["y"])
         )
         st.plotly_chart(fig, use_container_width=True)
     with plot2:
-        odeltas = [o.delta() for o in options]
-        odeltas = pd.Series(odeltas, index=Sset, name="Delta")    
+        # odeltas = [o.delta() for o in options]
+        # odeltas = pd.Series(odeltas, index=uset, name="Delta")    
+        sname = odeltas.name
         fig = _plotgreeks(
             odeltas, 
             CP = CP, 
             K = K, 
             yaxside = "right", 
-            lcol = dbcol(odeltas.name)
+            lcol = dbcol(odeltas.name),
+            atmv = (ATM[ss]["x"], ATM[ss]["y"])
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    # Gamma and Vega
-    plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
-    with plot1:   
-        ogamma = [o.gamma() * 100 for o in options]
-        ogamma = pd.Series(ogamma, index=Sset, name="Gamma")
-        fig = _plotgreeks(
-            ogamma, 
-            CP = CP,
-            K = K, 
-            lcol = dbcol(ogamma.name)
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    with plot2:
-        ovega = [o.vega() for o in options]
-        ovega = pd.Series(ovega, index=Sset, name="Vega")    
-        fig = _plotgreeks(
-            ovega, 
-            CP = CP, 
-            K = K,
-            yaxside = "right", 
-            lcol = dbcol(ovega.name)
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # # Gamma and Vega
+    # plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
+    # with plot1:   
+    #     ogamma = [o.gamma() * 100 for o in options]
+    #     ogamma = pd.Series(ogamma, index=uset, name="Gamma")
+    #     fig = _plotgreeks(
+    #         ogamma, 
+    #         CP = CP,
+    #         K = K, 
+    #         lcol = dbcol(ogamma.name)
+    #     )
+    #     st.plotly_chart(fig, use_container_width=True)
+    # with plot2:
+    #     ovega = [o.vega() for o in options]
+    #     ovega = pd.Series(ovega, index=uset, name="Vega")    
+    #     fig = _plotgreeks(
+    #         ovega, 
+    #         CP = CP, 
+    #         K = K,
+    #         yaxside = "right", 
+    #         lcol = dbcol(ovega.name)
+    #     )
+    #     st.plotly_chart(fig, use_container_width=True)
 
-    # Theta and Lambda
-    plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
-    with plot1: 
-        otheta = [o.theta() for o in options]
-        otheta = pd.Series(otheta, index=Sset, name="Theta")
-        fig = _plotgreeks(
-            otheta,
-            CP = CP,
-            K = K, 
-            lcol = dbcol(otheta.name), 
-            xlab = True
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    with plot2:
-        olambda = [o.llambda() for o in options]
-        olambda = pd.Series(olambda, index=Sset, name="Lambda")    
-        fig = _plotgreeks(
-            olambda, 
-            CP = CP, 
-            K = K, 
-            yaxside = "right", 
-            lcol = dbcol(olambda.name), 
-            xlab=True
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # # Theta and Lambda
+    # plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
+    # with plot1: 
+    #     otheta = [o.theta() for o in options]
+    #     otheta = pd.Series(otheta, index=uset, name="Theta")
+    #     fig = _plotgreeks(
+    #         otheta,
+    #         CP = CP,
+    #         K = K, 
+    #         lcol = dbcol(otheta.name), 
+    #         xlab = True
+    #     )
+    #     st.plotly_chart(fig, use_container_width=True)
+    # with plot2:
+    #     olambda = [o.llambda() for o in options]
+    #     olambda = pd.Series(olambda, index=uset, name="Lambda")    
+    #     fig = _plotgreeks(
+    #         olambda, 
+    #         CP = CP, 
+    #         K = K, 
+    #         yaxside = "right", 
+    #         lcol = dbcol(olambda.name), 
+    #         xlab=True
+    #     )
+    #     st.plotly_chart(fig, use_container_width=True)
+
+    # Hiding "Made with Streamlit message"
+    st.write('''
+        <style>
+            footer {visibility:hidden;}
+        </style>
+        ''',
+        unsafe_allow_html = True
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def _plotgreeks(
     data: pd.Series,
@@ -255,6 +383,7 @@ def _plotgreeks(
     K: float,
     lcol: str,    
     yaxside: str = "left",
+    atmv: tuple or None = None,
     gridcolor: str = "#EEF4F4",
     xlab: bool = False
 ):
@@ -344,19 +473,19 @@ def _plotgreeks(
     )
 
     # Plot a marker for the ATM data 
-    atmidx = np.argmin(pd.Series(data.index).apply(lambda x: abs(x - K)))
-    atmx = [data.index[atmidx]]
-    atmy = [data.values[atmidx]]
+    # atmidx = np.argmin(pd.Series(data.index).apply(lambda x: abs(x - K)))
+    # atmx = [data.index[atmidx]]
+    # atmy = [data.values[atmidx]]
     fig.add_trace(
         go.Scatter(
-            x = atmx,
-            y = atmy, 
-            name = f"ATM {data.name} ({atmy[0]:.1f})",
+            x = atmv[0], #atmx,
+            y = atmv[1], #atmy, 
+            name = f"ATM {data.name}", # ({atmy[0]:.1f})",
             marker = dict(
                 color = "black",
                 size = [8]
             ),
-            showlegend = True
+            showlegend = True #True
         )
     )
 
