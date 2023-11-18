@@ -213,7 +213,7 @@ def dbpage_greeks(
 
     # Volatilty Slider 
     v = st.sidebar.slider(
-        label =  "Volatility (in percentage) (v)", 
+        label =  "Volatility (%)", 
         min_value = 1.0,
         max_value = 99.9,
         value = 30.0, 
@@ -227,7 +227,7 @@ def dbpage_greeks(
 
     # Interes Rate Slider 
     r = st.sidebar.slider(
-        label = "Interest Rate (in percentage) (r)", 
+        label = "Interest Rate (%)", 
         min_value = 0.0,
         max_value = 8.0,
         value = 2.0, 
@@ -236,6 +236,14 @@ def dbpage_greeks(
         # on_change = get_T(TType, minvt, maxvt)
     )
     r = r / 100
+
+
+
+
+
+
+
+
 
 
 
@@ -252,109 +260,109 @@ def dbpage_greeks(
     # st.write( oprices ) 
     # st.write( oprices ) 
 
+    # Price and Delta
     plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
     with plot1:   
         oprices = [o.price() for o in options]
         oprices = pd.Series(oprices, index=Sset, name="Price")
-        fig = _plotgreeks(oprices, K=K, yaxside="left", lcol=dbcol(oprices.name))
+        fig = _plotgreeks(
+            oprices, 
+            CP = CP,
+            K = K, 
+            lcol = dbcol(oprices.name)
+        )
         st.plotly_chart(fig, use_container_width=True)
     with plot2:
         odeltas = [o.delta() for o in options]
         odeltas = pd.Series(odeltas, index=Sset, name="Delta")    
-        fig = _plotgreeks(odeltas, K=K, yaxside="right", lcol=dbcol(odeltas.name))
-        st.plotly_chart(fig, use_container_width=True) #, theme="streamlit")
+        fig = _plotgreeks(
+            odeltas, 
+            CP = CP, 
+            K = K, 
+            yaxside = "right", 
+            lcol = dbcol(odeltas.name)
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
+    # Gamma and Vega
     plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
     with plot1:   
         ogamma = [o.gamma() * 100 for o in options]
         ogamma = pd.Series(ogamma, index=Sset, name="Gamma")
-        fig = _plotgreeks(ogamma, K=K, yaxside="left", lcol=dbcol(ogamma.name))
+        fig = _plotgreeks(
+            ogamma, 
+            CP = CP,
+            K = K, 
+            lcol = dbcol(ogamma.name)
+        )
         st.plotly_chart(fig, use_container_width=True)
     with plot2:
         ovega = [o.vega() for o in options]
         ovega = pd.Series(ovega, index=Sset, name="Vega")    
-        fig = _plotgreeks(ovega, K=K, yaxside="right", lcol=dbcol(ovega.name))
-        st.plotly_chart(fig, use_container_width=True) #, theme="streamlit")
+        fig = _plotgreeks(
+            ovega, 
+            CP = CP, 
+            K = K,
+            yaxside = "right", 
+            lcol = dbcol(ovega.name)
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
+    # Theta and Lambda
     plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
     with plot1: 
         otheta = [o.theta() for o in options]
         otheta = pd.Series(otheta, index=Sset, name="Theta")
-        fig = _plotgreeks(otheta, K=K, yaxside="left", lcol=dbcol(otheta.name))
+        fig = _plotgreeks(
+            otheta,
+            CP = CP,
+            K = K, 
+            lcol = dbcol(otheta.name), 
+            xlab = True
+        )
         st.plotly_chart(fig, use_container_width=True)
     with plot2:
         olambda = [o.llambda() for o in options]
         olambda = pd.Series(olambda, index=Sset, name="Lambda")    
-        fig = _plotgreeks(olambda, K=K, yaxside="right", lcol=dbcol(olambda.name))
-        st.plotly_chart(fig, use_container_width=True) #, theme="streamlit")
-
-
-
-
-# def get_T(
-#     TType: str,
-#     minvt: float,
-#     maxvt: float
-#     # vval: float
-# ) -> float:
-#     """
-#     """
-#     # Expiration  
-#     ff = "%d" if TType == "Days" else "%f"
-#     # minvt = 1 if TType == "Days" else 0.0028
-#     # maxvt = 1825 if TType == "Days" else 5.0
-#     vval = 90 if TType == "Days" else 0.25
-#     T = st.number_input(
-#         label = "Expiration (T)",
-#         min_value = minvt,
-#         max_value = maxvt,
-#         format = ff,
-#         value = vval,
-#         help = None,
-#         key = "dte"
-#         # on_change=
-#     )
-#     return T / 365 if TType == "Days" else T
-        
-
-
+        fig = _plotgreeks(
+            olambda, 
+            CP = CP, 
+            K = K, 
+            yaxside = "right", 
+            lcol = dbcol(olambda.name), 
+            xlab=True
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 def _plotgreeks(
     data: pd.Series,
+    CP: str,
     K: float,
     lcol: str,    
     yaxside: str = "left",
     gridcolor: str = "#EEF4F4",
-    xaxes: bool = False,
+    xlab: bool = False
 ):
     """
     """
     # Create figure
     fig = go.Figure()
 
+    # Creating a first trace for the horizontal zero line
     fig.add_trace(
         go.Scatter(
             x = data.index, 
             y = np.repeat(0, len(data.index)), 
             name = None, 
-            # marker = dict(
-            #     # color = "#EEF4F4",
-            #     color = gridcolor, #"#C6C6C6",
-
-            #     width = 1.2, 
-            # ),
             line_dash = "longdash",
             line_color = "#C6C6C6",
             line_width = 1,
             showlegend = False,
-            # mode = 'lines',
-            # fill = 'tonexty',
-            # fillcolor='rgba(167, 167, 167, 0.12)'
+            hoverinfo = "none"
         )
     )
 
-
-    # Plot
+    # Adding option data trace
     fig.add_trace(
         go.Scatter(
             x = data.index,
@@ -365,32 +373,40 @@ def _plotgreeks(
                 width = 1.8, 
                 dash = "solid"
             ),
-            showlegend = False
+            showlegend = False, 
         )
     )
+
+    # Lable x-axis
+    if xlab:
+        xlabel = f"Underlying S (K={K})"
+    else:
+        xlabel = None
+
+    # legend position
+    if (CP == "P") and (data.name in ["Price","Lambda"]):
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
+    elif (CP == "C") and (data.name == "Lambda"):
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
+    elif data.name == "Theta":
+        legpos = dict(yanchor = "bottom", y = 0.01, xanchor = "left", x = 0.01)
+    else: 
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "left", x = 0.01)
+
     # Update layout
     fig.update_layout(
-        # title = {"text": "KKK", "font_size": 22},
-        # template = "plotly_dark" if plotlypalette == "dark" else "plotly",
+        # title = {"text": "", "font_size": 22},
         # shapedefaults = {'line': {'color': '#2a3f5f'}},
-        xaxis = dict(title = f"Underlying S (K={K})"),
+        xaxis = dict(title = xlabel),
         yaxis = dict(title = f"{data.name}", side = yaxside),
         hovermode = "x",  
         hoverlabel = dict(
-            # bgcolor = "white",
+            #bgcolor = "white",
             font_size = 14,
             # font_family = "Rockwell"
         ),
         autosize = True,
-        legend = dict(
-            yanchor = "top",
-            y = 0.99,
-            xanchor = "left",
-            x = 0.01,
-            # bgcolor = "#E6E6E6",
-            # font_color = "#000000",
-            # borderwidth = 0
-        ),
+        legend = legpos,
         plot_bgcolor = "#E6E6E6",
         legend_bgcolor = "#E6E6E6",
         legend_font_color = "#000000",
@@ -398,7 +414,7 @@ def _plotgreeks(
         margin_pad = 0, 
         width = 500,  # Specify the width of the plot in pixels
         height = 210,  # Specify the height of the plot in pixels
-        margin = dict(l=0, r=0, t=35, b=0)  # Set margins around the plot
+        margin = dict(l=0, r=0, t=32, b=0)  # Set margins around the plot
     )
     fig.update_xaxes(
         # zeroline = False, # not working 
@@ -411,6 +427,25 @@ def _plotgreeks(
         # griddash="dot",
         # title_standoff=100
     )
+
+    # Plot a marker for the ATM data 
+    atmidx = np.argmin(pd.Series(data.index).apply(lambda x: abs(x - K)))
+    atmx = [data.index[atmidx]]
+    atmy = [data.values[atmidx]]
+    fig.add_trace(
+        go.Scatter(
+            x = atmx,
+            y = atmy, 
+            name = f"ATM {data.name} ({atmy[0]:.1f})",
+            marker = dict(
+                color = "black",
+                size = [8]
+            ),
+            showlegend = True
+        )
+    )
+
+
 
     return fig
 
