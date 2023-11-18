@@ -15,135 +15,16 @@ from src.utilities import get_Smax, get_Smin, dbcol
 from models.blackscholes import BSOption
 
 
+
+
 def dbpage_greeks(
     nss: int = 75
 ):
     """
     """
-    # Page title
-    st.title("The Black-Scholes Option Playgound")
-    st.header("Option Greeks")
+    # # Page title
+    st.title("Option Greeks")
     # st.write("---")
-
-
-
-
-
-    # par1, par2, par3, par4 = st.columns([1,1,0.5,0.5], gap="small") 
-    # with par1:
-    #     # Call or Put price
-    #     cp = st.selectbox(
-    #         label = "Option type",
-    #         options = ["Call","Put"],
-    #         index = 0,
-    #         key = "option-type"
-    #     )
-    #     CP = "C" if cp == "Call" else "P" 
-    # with par2:
-    #     # Strike price 
-    #     K = st.number_input(
-    #         label = "Option strike",
-    #         min_value = 0.1,
-    #         format = "%f", 
-    #         value = 100.0,
-    #         placeholder = None,
-    #         help = "'Exercise' price of the option",
-    #         key = "strike"
-    #         # on_change=
-    #     ) 
-    # with par3:
-    #     # Expiration type
-    #     TType = st.selectbox(
-    #         label = "Expiration type",
-    #         options = ["Days","Years"],
-    #         index = 0,
-    #         key = "dte-type"
-    #     ) 
-    # with par4:
-    #     pass
-    #     # Expiration  
-    #     # ff = "%d" if TType == "Days" else "%f"
-    #     # minvt = 1 if TType == "Days" else 0.0028
-    #     # maxvt = 1825 if TType == "Days" else 5.0
-    #     # vval = 90 if TType == "Days" else 0.25
-    #     # T = st.number_input(
-    #     #     label = "Expiration (T)",
-    #     #     min_value = minvt,
-    #     #     max_value = maxvt,
-    #     #     format = ff,
-    #     #     value = vval,
-    #     #     help = None,
-    #     #     key = "dte"
-    #     #     # on_change=
-    #     # )
-    #     # if TType == "Days": 
-    #     #     T = T / 365
-    #     # T = get_T(TType, minvt, maxvt)
-
-    # par1, par2, par3 = st.columns(3) #[1,1,1], gap="small") 
-    # with par1:
-    #     # Volatility (%)
-    #     v = st.number_input(
-    #         label = "Volatility (in percentage) (v)",
-    #         min_value = 1.0,
-    #         max_value = 99.9,
-    #         format = "%f",
-    #         value = 30.0,
-    #         help = "'Implied' Volatility",
-    #         key = "volatility"
-    #         # on_change=
-    #     ) 
-    #     v = v / 100
-    # with par2:
-    #     # Interest Rate (%)
-    #     r = st.number_input(
-    #         label = "Interest Rate (in percentage) (r)",
-    #         min_value = 0.0,
-    #         max_value = None,
-    #         format = "%f",
-    #         value = 3.5,
-    #         help = None,
-    #         key = "interest-rate"
-    #         # on_change=
-    #     )
-    #     r = r / 100
-    # with par3:
-    #     # Dividend Yield
-    #     q = st.number_input(
-    #         label = "Dividend Yield (q)",
-    #         min_value = 0.0,
-    #         max_value = None,
-    #         format = "%f",
-    #         value = 0.0,
-    #         help = None,
-    #         key = "div-yield"
-    #         # on_change=
-    #     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -190,19 +71,19 @@ def dbpage_greeks(
             key = "dte-type"
         ) 
 
+    with st.sidebar:
+        st.write("Black-Scholes Call Option")
+
+
     # Expiration Slider 
-    # ff = "%d" if TType == "Days" else "%f"
-    # minvt = 1 if TType == "Days" else 0.0028
-    # maxvt = 1825 if   TType == "Days" else 5.0
-    # vval = 90 if TType == "Days" else 0.25
     T = st.sidebar.slider(
         label = f"Time-to-Expiration ({TType})", 
         min_value = 0 if TType == "Days" else 0.0, 
-        # max_value = maxvt if TType == "Days" else float(maxvt), 
-        max_value = 1825 if TType == "Days" else float(5), 
-        # value = int(T) if TType == "Days" else float(T), 
-        value = 90 if TType == "Days" else 0.25, 
-        # step = None, 
+        # max_value = 1825 if TType == "Days" else float(5), 
+        max_value = 1095 if TType == "Days" else float(3), 
+        value = 182 if TType == "Days" else 0.50, 
+        # value = 90 if TType == "Days" else 0.25, 
+        step = 1 if TType == "Days" else 0.05, 
         # format = None, 
         key = "slider-exp", 
         help = None, 
@@ -217,7 +98,7 @@ def dbpage_greeks(
         min_value = 1.0,
         max_value = 99.9,
         value = 30.0, 
-        # step = None, 
+        step = 1.0, 
         # format = None, 
         key = "slider-vola", 
         help = None, 
@@ -237,6 +118,25 @@ def dbpage_greeks(
     )
     r = r / 100
 
+    with st.sidebar:
+        st.markdown('''
+            <style>
+            .katex-html {
+                text-align: left;
+                font-family: monospace;
+                font-size: 15px;
+            }
+            </style>''',
+            unsafe_allow_html=True
+        )
+        if CP == "C":
+            
+            st.latex(r'''\text{Price}:\newline
+                C_t = S_t N(h) - Ke^{-r\tau}N(h-\sigma\sqrt{\tau})
+            ''')
+        else:
+            st.latex(r'''P_t = -S_t N(-h) + Ke^{-r\tau}N(-h+\sigma\sqrt{\tau}), 	
+            ''')
 
 
 
