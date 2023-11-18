@@ -71,6 +71,21 @@ def dbpage_greeks(
             key = "dte-type"
         ) 
 
+    
+    
+    
+    sens = st.multiselect(
+        label = "Choose Price or Greeks",
+        options = ["Price","Delta","Gamma"], 
+        default = None, 
+        key = None, 
+        help = None, 
+        placeholder="Choose an option", 
+    )
+
+
+
+
     with st.sidebar:
         st.write("Black-Scholes Call Option")
 
