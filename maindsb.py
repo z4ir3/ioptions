@@ -23,20 +23,6 @@ def main():
             "About": "# Option playground"
         }
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # Remove extra white space
     st.write('''
         <style>
@@ -53,26 +39,35 @@ def main():
         st.sidebar.title("")
 
         PageSelected = option_menu(
-            menu_title = None,
-            menu_icon = "cast",
+            menu_title = "Option Playgrounds",
+            menu_icon = "bar-chart",
             options=[
-                "Home",
+                # "Home",
                 "Option Greeks",
                 "Option Strategies"
             ],
             icons = [
-                "house",
+                # "house",
                 "box-arrow-in-right",
                 "stack"
             ], # icons from the bootstrap webpage
             default_index = 0,
-            orientation = "vertical"
+            orientation = "vertical",
             # orientation = "horizontal"
+            # styles={
+            #     "container": {"padding": "0!important", "background-color": "#fafafa"},
+            #     "icon": {"color": "orange", "font-size": "25px"}, 
+            #     "nav-link": {"font-size": "25px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
+            #     "nav-link-selected": {"background-color": "green"},
+            # }
+            styles={
+                "nav-link": {"--hover-color": "#aaa"},
+            }
         )
 
-    if PageSelected == "Home":
-        _ = dbpage_home()
-    elif PageSelected == "Option Greeks":
+    # if PageSelected == "Home":
+    #     _ = dbpage_home()
+    if PageSelected == "Option Greeks":
         _ = dbpage_greeks()
     else:
         _ = dbpage_strategies()
