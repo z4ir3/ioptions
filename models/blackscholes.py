@@ -293,18 +293,38 @@ class BSOption:
             # The Option has expired
             return 0          
             
-    def greeks(self) -> dict:
+    def greeks(
+        self,
+        grk: str or None = None, 
+        rnd: int = 2
+    ) -> dict:
         """
-        Black-Scholes pricing model - All greeks
+        Black-Scholes pricing model - All greeks (and price)
         """
-        grk = {
-            "Lambda": round(BSOption.llambda(self), 2),
-            "Delta": round(BSOption.delta(self), 2),
-            "Gamma": round(BSOption.gamma(self), 2),
-            "Theta": round(BSOption.theta(self), 2),
-            "Vega": round(BSOption.vega(self), 2)
-        }
-        return grk
+        if grk is None:
+            return {
+                "Price": round(BSOption.llambda(self), rnd),
+                "Lambda": round(BSOption.llambda(self), rnd),
+                "Delta": round(BSOption.delta(self), rnd),
+                "Gamma": round(BSOption.gamma(self), rnd),
+                "Theta": round(BSOption.theta(self), rnd),
+                "Vega": round(BSOption.vega(self), rnd)
+            }
+        if grk == "Price":
+            return round(BSOption.price(self), rnd)
+        elif grk == "Delta":
+            return round(BSOption.delta(self), rnd)
+        elif grk == "Gamma":
+            return round(BSOption.gamma(self), rnd)
+        elif grk == "Vega":
+            return round(BSOption.vega(self), rnd)
+        elif grk == "Theta":
+            return round(BSOption.theta(self), rnd)
+        elif grk == "Lambda":
+            return round(BSOption.llambda(self), rnd)
+        else:
+            raise ValueError("Wrong input greek name")
+
     
     def underlying_set(
         self, 
