@@ -1,7 +1,7 @@
 """
 """
 
-def dbcol(sens: str) -> dict:
+def bscolors(sens: str) -> dict:
     """
     """
     if sens in ["Price","price"]:
