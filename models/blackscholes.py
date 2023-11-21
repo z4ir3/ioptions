@@ -239,8 +239,9 @@ class BSOption:
         # Gamma is the same for both Call and Put            
         if self.T > 0:
             # The Option has not expired yet
-            return + np.exp(-self.q*self.T) * self.N(self._d1(S), cum=0) \
-                   / (self.S * self.v * np.sqrt(self.T))
+            gm = + np.exp(-self.q*self.T) * self.N(self._d1(S), cum=0) \
+                 / (self.S * self.v * np.sqrt(self.T))
+            return gm * 100
         else:
             # The Option has expired
             return 0
@@ -325,7 +326,7 @@ class BSOption:
         else:
             raise ValueError("Wrong input greek name")
 
-    
+
     def underlying_set(
         self, 
         bnd: float = 0.4, 
