@@ -18,7 +18,8 @@ from models.blackscholes import BSOption
 
 
 def dbpage_greeks(
-    nss: int = 75
+    nss: int = 75,
+    sensname: list = ["Price","Delta","Gamma","Vega","Theta","Lambda"]
 ):
     """
     """
@@ -30,7 +31,7 @@ def dbpage_greeks(
 
 
 
-    par1, par2, par3, par4 = st.columns([0.5,0.5,0.5,0.5], gap="small") 
+    par1, par2, par3, par4 = st.columns([1,1,1,0.5], gap="small") 
     with par1:
         # Call or Put price
         cp = st.selectbox(
@@ -158,37 +159,38 @@ def dbpage_greeks(
     with st.sidebar:
         st.write("Black-Scholes Call Option")
 
-
-    # Expiration Slider 
-    T = st.sidebar.slider(
-        label = f"Time-to-Expiration ({TType})", 
-        min_value = 0 if TType == "Days" else 0.0, 
-        # max_value = 1825 if TType == "Days" else float(5), 
-        max_value = 1095 if TType == "Days" else float(3), 
-        value = 182 if TType == "Days" else 0.50, 
-        # value = 90 if TType == "Days" else 0.25, 
-        step = 1 if TType == "Days" else 0.05, 
-        # format = None, 
-        key = "slider-exp", 
-        help = None, 
-        # on_change = get_T(TType, minvt, maxvt)
-    )
-    if TType == "Days": 
-        T = T / 365
-
-    # Volatilty Slider 
-    v = st.sidebar.slider(
-        label =  "Volatility (%)", 
-        min_value = 1.0,
-        max_value = 99.9,
-        value = 30.0, 
-        step = 1.0, 
-        # format = None, 
-        key = "slider-vola", 
-        help = None, 
-        # on_change = get_T(TType, minvt, maxvt)
-    )
-    v = v / 100
+        col1, col2 = st.columns(2)
+        with col1:
+            # Expiration Slider 
+            T = st.sidebar.slider(
+                label = f"Time-to-Expiration ({TType})", 
+                min_value = 0 if TType == "Days" else 0.0, 
+                # max_value = 1825 if TType == "Days" else float(5), 
+                max_value = 1095 if TType == "Days" else float(3), 
+                value = 182 if TType == "Days" else 0.50, 
+                # value = 90 if TType == "Days" else 0.25, 
+                step = 1 if TType == "Days" else 0.05, 
+                # format = None, 
+                key = "slider-exp", 
+                help = None, 
+                # on_change = get_T(TType, minvt, maxvt)
+            )
+            if TType == "Days": 
+                T = T / 365
+        with col2:
+            # Volatilty Slider 
+            v = st.sidebar.slider(
+                label =  "Volatility (%)", 
+                min_value = 1.0,
+                max_value = 99.9,
+                value = 30.0, 
+                step = 1.0, 
+                # format = None, 
+                key = "slider-vola", 
+                help = None, 
+                # on_change = get_T(TType, minvt, maxvt)
+            )
+            v = v / 100
 
     # Interes Rate Slider 
     r = st.sidebar.slider(
@@ -226,24 +228,14 @@ def dbpage_greeks(
 
 
     # Set up Options
-    sensname = ["Price","Delta","Gamma","Vega","Theta","Lambda"]
     uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-    options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
-    sensval = {k: dict() for k in sensname}
-    # oprices = pd.Series([o.price() for o in options], index=uset, name="Price")
-    # odeltas = pd.Series([o.delta() for o in options], index=uset, name="Delta")    
-    for k in sensval:
-        sensval[k] = pd.Series([o.greeks[k] for o in options], index=uset, name=k)
+    Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
 
-
-
-
-
-
-
-
-
-
+    Sens = dict() #{k: dict() for k in sensname}
+    for s in sensname: #sensval:
+        Sens[s] = pd.Series([o.greeks(grk=s) for o in Options], index=uset, name=s)
+    # st.write(Sens)
+    # st.write(options[40].greeks()["Price"])
 
 
 
@@ -257,18 +249,16 @@ def dbpage_greeks(
 
     ATM = {k: dict() for k in sensname}
     with st.container():
-        atms = st.columns(len(sensname))
-        for idx, ss in enumerate(sensname): 
-                
-            # Plot a marker for the ATM data 
-            atmidx = np.argmin(pd.Series(oprices.index).apply(lambda x: abs(x - K)))
-            ATM[ss]["x"] = [oprices.index[atmidx]]
-            ATM[ss]["y"] = [oprices.values[atmidx]]
-
+        atms = st.columns(len(sensname))        
+        for idx, s in enumerate(sensname): 
+            atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - K)))
+            ATM[s]["x"] = [Sens[s].index[atmidx]]
+            ATM[s]["y"] = [Sens[s].values[atmidx]]
             with atms[idx]:
                 st.metric(
-                    label = f"ATM {ss}", 
-                    value = f"{ATM[ss]['y'][0]}"
+                    label = f"ATM {s}", 
+                    value = f"{ATM[s]['y'][0]}",
+                    help = "ssss"
                 )
 
 
