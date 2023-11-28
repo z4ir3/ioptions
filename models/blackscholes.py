@@ -19,13 +19,13 @@ class BSOption:
         q: float = 0
     ):
         """
-        CP    : either "C" (Call) or "P" (Put)
-        S     : underlying Price 
-        K     : strike Price
-        r     : risk-free interest rate
-        T     : time-to-maturity in years 
-        v     : implied volatility
-        q     : dividend yield
+        CP: either "C" (Call) or "P" (Put)
+        S: underlying Price 
+        K: strike Price
+        r: risk-free interest rate
+        T: time-to-maturity in years 
+        v: implied volatility
+        q: dividend yield
         """
         self.CP = BSOption._valid_option(CP)
         self.S = BSOption._valid_underlying(S)    

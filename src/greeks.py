@@ -33,6 +33,7 @@ def dbpage_greeks(
             label = "Option type",
             options = ["Call","Put"],
             index = None,
+            placeholder = "Call or Put",
             key = "option-type"
         )
         CP = "C" if cp == "Call" else "P" 
@@ -43,7 +44,7 @@ def dbpage_greeks(
             min_value = 0.1,
             format = "%f", 
             value = None, #100.0,
-            placeholder = None,
+            placeholder = "Enter Strike price",
             help = "'Exercise' price of the option",
             key = "strike"
             # on_change=
