@@ -39,7 +39,6 @@ def get_Smax(
 
 def streategynames() -> list:
     strategies = [
-        "Custom strategy",
         "Long Call",
         "Short Call",
         "Long Put",
@@ -59,6 +58,7 @@ def streategynames() -> list:
         "Top Butterfly",
         "Bottom Butterfly",
         "Top Iron Condor",
-        "Bottom Iron Condor"
+        "Bottom Iron Condor",
+        "Custom strategy"
     ]
     return strategies

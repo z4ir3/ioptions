@@ -3,7 +3,16 @@
 
 import streamlit as st
 
+import pandas as pd
+import numpy as np
+
+import plotly.io as pio
+pio.renderers.default = "browser"
+import plotly.graph_objs as go 
+
 from src.utils import streategynames
+
+
 
 def dbpage_strategies():
     """
@@ -88,7 +97,8 @@ def dbpage_strategies():
         with col1:
             chosen_strategy = st.selectbox(
                 label="Choose the strategy",
-                options=strnames
+                options=strnames,
+
             )
         if chosen_strategy == "Custom strategy":
             with col2:
@@ -123,7 +133,6 @@ def dbpage_strategies():
             )
 
         
-
     if chosen_strategy == "Custom strategy":
 
         with st.expander(label="Enter strategy", expanded=True):        
@@ -133,18 +142,108 @@ def dbpage_strategies():
                 be random.
             """)
             with st.form("Enter Option"):
+                col1, col2, col3, col4, col5, col6 = st.columns(6)
                 # st.write("Inside the form")
                 # Call or Put price
-                cp = st.selectbox(
-                    label = "Option type",
-                    options = ["Call","Put"],
-                    index = 0,
-                    # placeholder = "Call or Put",
-                    key = "option-type"
-                )
-                CP = "C" if cp == "Call" else "P"
-                checkbox_val = st.checkbox("Form checkbox")
-                # Every form must have a submit button.
-                submitted = st.form_submit_button("Submit")
+                with col1:
+                    cpo = st.selectbox(
+                        label = "Option type",
+                        options = ["Call","Put"],
+                        index = 0,
+                        # placeholder = "Call or Put",
+                        key = "option-type"
+                    )
+                    CPO = "C" if cpo == "Call" else "P"
+                with col2:
+                    # Underlying Price 
+                    Ko = st.number_input(
+                        label = "Strike Price ($K$)",
+                        min_value = 0.1,
+                        format = "%f", 
+                        value = S
+                    )
+                with col3:
+                    # Expiration 
+                    To = st.number_input(
+                        label = f"Expiration ({TType}) ($\\tau$)",
+                        min_value = 1 if TType == "Days" else 0.03, 
+                        max_value = 1095 if TType == "Days" else float(3), 
+                        value = 182 if TType == "Days" else 0.50, 
+                        format = "%d" if TType == "Days" else "%f"
+                    )
+                with col4:
+                    # Volatility
+                    Vo = st.number_input(
+                        label = f"Volatility (%) ($\\sigma$)",
+                        min_value = 5.0, 
+                        max_value = 100.0, 
+                        value = 30.0, 
+                        format = "%f"
+                    )
+                    Vo = Vo / 100
+                with col5:
+                    # Quantity
+                    Qo = st.number_input(
+                        label = f"Net Position",
+                        min_value = None, 
+                        max_value = None, 
+                        value = +1, 
+                        format = "%d",
+                        help = "Long minus short (nominal) position"
+                    )
+                with col6:
+                    st.markdown("""
+                        <p style="padding:6px;"</p>
+                    """,unsafe_allow_html=True)
+                    submitted = st.form_submit_button(
+                        label="Submit",
+                        use_container_width=True
+                    )
+
+    else:
 
 
+        col1, col2 = st.columns(2)
+        with col1:
+            # fig = _plotoptions()
+            #     Sens[ss], 
+            #     CP, 
+            #     K, 
+            #     lcol = bscolors(ss),
+            #     atmv = (ATM[ss]["x"], ATM[ss]["y"])
+            # )
+            # st.plotly_chart(fig, use_container_width=True)
+            pass
+
+        with col2:
+            # fig = _plotstrategy()
+            # st.plotly_chart(fig, use_container_width=True)
+            pass
+
+def _plotoptions():
+    """
+    """
+    # # Create figure
+    # fig = go.Figure()
+
+    # # Creating a first trace for the horizontal zero line
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x = data.index, 
+    #         y = np.repeat(0,len(data.index)), 
+    #         name = None, 
+    #         line_dash = "longdash",
+    #         line_color = "#C6C6C6",
+    #         line_width = 1,
+    #         showlegend = False,
+    #         hoverinfo = "none"
+    #     )
+    # )
+    pass
+
+
+
+def _plotstrategy():
+    """
+    """
+    pass
