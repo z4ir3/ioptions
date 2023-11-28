@@ -35,3 +35,30 @@ def get_Smax(
     """
     """
     return round(n * (1 + bnd), 0)
+
+
+def streategynames() -> list:
+    strategies = [
+        "Custom strategy",
+        "Long Call",
+        "Short Call",
+        "Long Put",
+        "Short Put",
+        "Bull Call Spread", 
+        "Bull Put Spread", 
+        "Bear Call Spread", 
+        "Bear Put Spread", 
+        "Top Strip",
+        "Bottom Strip",
+        "Top Strap",
+        "Bottom Strap",
+        "Top Straddle", 
+        "Bottom Straddle",
+        "Top Strangle",
+        "Bottom Strangle",
+        "Top Butterfly",
+        "Bottom Butterfly",
+        "Top Iron Condor",
+        "Bottom Iron Condor"
+    ]
+    return strategies
