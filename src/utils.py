@@ -44,7 +44,7 @@ def get_Smax(
     else:
         return round(nn,0)
 
-def streategynames() -> list:
+def strategynames() -> list:
     strategies = [
         "Long Call",
         "Short Call",

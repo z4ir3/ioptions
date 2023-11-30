@@ -5,7 +5,7 @@ from streamlit_option_menu import option_menu
 
 # from src.home import dbpage_home
 from src.greeks import dbpage_greeks
-from src.optionstrategies import dbpage_strategies
+from src.strategies import dbpage_strategies
 
 
 def main():
@@ -51,7 +51,7 @@ def main():
                 "box-arrow-in-right",
                 "stack"
             ], # icons from the bootstrap webpage
-            default_index = 0,
+            default_index = 1,
             orientation = "vertical",
             # orientation = "horizontal"
             # styles={
@@ -64,9 +64,15 @@ def main():
                 "nav-link": {"--hover-color": "#aaa"},
             }
         )
+        # ss = """
+        # <style>
+        #     .nav-link:hover {
+        #     color:rgb(100,100,150);
+        # }
+        # </style>
+        # """
+        # st.markdown(ss, unsafe_allow_html=True)
 
-    # if PageSelected == "Home":
-    #     _ = dbpage_home()
     if PageSelected == "Option Greeks":
         _ = dbpage_greeks()
     else:

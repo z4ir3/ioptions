@@ -1,6 +1,6 @@
-'''
+"""
 Black-Scholes option pricing strategy class
-'''
+"""
 
 import pandas as pd
 # import numpy as np
@@ -20,16 +20,16 @@ class BSOptStrat:
         q: float = 0
     ):
         """
-        S : Underlying Price
-        r : Risk-free interest rate
-        q : Dividend yield
+        S: Underlying Price
+        r: Risk-free interest rate
+        q: Dividend yield
         """
         self.S = S
         self.r = r
         self.q = q
-        self.instruments    = [] 
-        self.payoffs        = BSOptStrat.init_payoffs(S)
-        self.payoffs_exp    = BSOptStrat.init_payoffs(S)
+        self.instruments = [] 
+        self.payoffs = BSOptStrat.init_payoffs(S)
+        self.payoffs_exp = BSOptStrat.init_payoffs(S)
         self.payoffs_exp_df = pd.DataFrame()
     
 
