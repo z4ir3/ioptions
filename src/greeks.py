@@ -18,11 +18,12 @@ from models.blackscholes import BSOption
 
 def dbpage_greeks(
     nss: int = 80,
-    sensname: list = ["Price","Delta","Gamma","Vega","Theta","Lambda"]
-):
+    sensname: list = ["Price","Delta","Gamma","Vega","Theta","Lambda"],
+    rnd: int = 6
+) -> None:
     """
     """
-    # # Page title
+    # Page title
     st.title("Black-Scholes Option Greeks")
     # st.write("---")
 
@@ -40,7 +41,7 @@ def dbpage_greeks(
     with par2:
         # Strike price 
         K = st.number_input(
-            label = "Option strike (K)",
+            label = "Option strike ($K$)",
             min_value = 0.1,
             format = "%f", 
             value = None, #100.0,
@@ -52,7 +53,7 @@ def dbpage_greeks(
     with par3:
         # Dividend Yield
         q = st.number_input(
-            label = "Dividend Yield (q)",
+            label = "Dividend Yield ($q$)",
             min_value = 0.0,
             max_value = None,
             format = "%f",
@@ -75,7 +76,7 @@ def dbpage_greeks(
         with st.container():
             # Expiration Slider 
             T = st.slider(
-                label = f"Time-to-Expiration ({TType})", 
+                label = f"Time-to-Expiration ({TType}) ($\\tau$)", 
                 min_value = 0 if TType == "Days" else 0.0, 
                 # max_value = 1825 if TType == "Days" else float(5), 
                 max_value = 1095 if TType == "Days" else float(3), 
@@ -94,7 +95,7 @@ def dbpage_greeks(
         with col1:
             # Volatilty Slider 
             v = st.slider(
-                label =  "Volatility (%)", 
+                label =  "Volatility (%) ($\sigma$)", 
                 min_value = 1.0,
                 max_value = 99.9,
                 value = 30.0, 
@@ -109,7 +110,7 @@ def dbpage_greeks(
             # Interes Rate Slider 
             # r = st.sidebar.slider(
             r = st.slider(
-                label = "Interest Rate (%)", 
+                label = "Interest Rate (%) ($r$)", 
                 min_value = 0.0,
                 max_value = 8.0,
                 value = 2.0, 
@@ -128,7 +129,8 @@ def dbpage_greeks(
 
         Sens = dict()
         for s in sensname: 
-            Sens[s] = pd.Series([o.greeks(grk=s) for o in Options], index=uset, name=s)
+            grk = [o.greeks(grk=s, rnd=rnd) for o in Options]
+            Sens[s] = pd.Series(grk, index=uset, name=s)
         # st.write(Sens)
         # st.write(options[40].greeks()["Price"])
 
@@ -146,7 +148,7 @@ def dbpage_greeks(
                 with atms[idx]:
                     st.metric(
                         label = f"ATM {s}",
-                        value = f"{ATM[s]['y'][0]}",
+                        value = f"{ATM[s]['y'][0]:.2f}",
                         help = None
                     )
 

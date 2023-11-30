@@ -25,8 +25,12 @@ def get_Smin(
 ) -> float:
     """
     """
-    return round(n * (1 - bnd), 0)
-
+    nn = n * (1 - bnd)
+    if n <= 1:
+        return nn
+    else:
+        return round(nn,0)
+    
 @staticmethod 
 def get_Smax(
     n: float, 
@@ -34,8 +38,11 @@ def get_Smax(
 ) -> float:
     """
     """
-    return round(n * (1 + bnd), 0)
-
+    nn = n * (1 + bnd)
+    if n <= 1:
+        return nn
+    else:
+        return round(nn,0)
 
 def streategynames() -> list:
     strategies = [
