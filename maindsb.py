@@ -3,7 +3,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu 
 
-# from src.home import dbpage_home
 from src.greeks import dbpage_greeks
 from src.strategies import dbpage_strategies
 
@@ -86,8 +85,6 @@ def main():
         ''',
         unsafe_allow_html = True
     )
-
-
 
 
 if __name__ == "__main__":
