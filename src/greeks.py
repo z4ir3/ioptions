@@ -129,6 +129,9 @@ def dbpage_greeks(
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
+
+        st.write(get_Smin(K))
+
         Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
 
         Sens = dict()

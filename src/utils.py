@@ -24,7 +24,7 @@ def bscolors(sens: str) -> dict:
         return "#7D7D7D" 
 
 
-@staticmethod 
+# @staticmethod 
 def get_Smin(
     n: float, 
     bnd: float = 0.60
@@ -37,7 +37,7 @@ def get_Smin(
     else:
         return round(nn,0)
     
-@staticmethod 
+# @staticmethod 
 def get_Smax(
     n: float, 
     bnd: float = 0.60
