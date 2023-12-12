@@ -231,7 +231,7 @@ def dbpage_greeks(
     
     except:
         # Call/Put and Strike not inserted yet 
-        pass
+        st.write("insert option and strike")
 
     # Hiding "Made with Streamlit message"
     st.write('''
@@ -336,7 +336,7 @@ def _plotgreeks(
         # griddash="dot",
         # title_standoff=100
     )
-    
+
     # Plot a marker for the ATM data 
     fig.add_trace(
         go.Scatter(
