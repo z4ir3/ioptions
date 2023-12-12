@@ -1,6 +1,9 @@
 """
 """
 import streamlit as st
+
+import sys
+sys.path.insert(1,"/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/streamlit_option_menu")
 from streamlit_option_menu import option_menu 
 
 from src.greeks import dbpage_greeks

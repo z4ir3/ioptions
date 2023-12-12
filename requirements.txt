@@ -4,4 +4,4 @@ pandas==2.1.4
 plotly==5.18.0
 scipy==1.11.4
 streamlit==1.27.0
-streamlit_option_menu==0.3.6
+streamlit-option-menu==0.3.6
