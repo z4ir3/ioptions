@@ -25,7 +25,6 @@ def dbpage_greeks(
     """
     # Page title
     st.title("Black-Scholes Option Greeks")
-    # st.write("---")
 
     par1, par2, par3, par4 = st.columns([1,1,1,0.5], gap="small") 
     with par1:
@@ -70,6 +69,10 @@ def dbpage_greeks(
             index = 0,
             key = "dte-type"
         ) 
+
+    st.write(CP)
+    st.write(K)
+    st.write(TType)
 
 
     with st.sidebar:
