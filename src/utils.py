@@ -4,18 +4,24 @@
 def bscolors(sens: str) -> dict:
     """
     """
-    if sens in ["Price","price"]:
-        return "#2980b9" # blue 
-    elif sens in ["Delta","delta"]:
-        return "#cb4335" # red 
-    elif sens in ["Gamma","gamma"]:
-        return "#a569bd" # violet
-    elif sens in ["Theta","theta"]:
-        return "#f1c40f" # yellow
-    elif sens in ["Vega","vega"]:
-        return "#1abc9c" # green
-    elif sens in ["Lambda","lambda"]:
-        return "#7D7D7D" # gray
+    if sens in {"Price","price"}:
+        # blue 
+        return "#2980b9" 
+    elif sens in {"Delta","delta"}:
+        # red
+        return "#cb4335"  
+    elif sens in {"Gamma","gamma"}:
+        # violet
+        return "#a569bd" 
+    elif sens in {"Theta","theta"}:
+        # yellow
+        return "#f1c40f" 
+    elif sens in {"Vega","vega"}:
+        # green
+        return "#1abc9c"
+    elif sens in {"Lambda","lambda"}:
+        # gray
+        return "#7D7D7D" 
 
 
 @staticmethod 
