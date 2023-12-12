@@ -25,6 +25,14 @@ def dbpage_greeks(
     """
     # Page title
     st.title("Black-Scholes Option Greeks")
+    # Hiding "Made with Streamlit message"
+    st.write('''
+        <style>
+            footer {visibility:hidden;}
+        </style>
+        ''',
+        unsafe_allow_html = True
+    )
 
     par1, par2, par3, par4 = st.columns([1,1,1,0.5], gap="small") 
     with par1:
@@ -69,11 +77,6 @@ def dbpage_greeks(
             index = 0,
             key = "dte-type"
         ) 
-
-    st.write(CP)
-    st.write(K)
-    st.write(TType)
-
 
     with st.sidebar:
         with st.container():
@@ -124,14 +127,10 @@ def dbpage_greeks(
             r = r / 100
 
     if (cp is not None) and (K is not None):
-      
         # Call/Put and Strike inserted
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-
-        st.write(get_Smin(K))
-
         Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
 
         Sens = dict()
@@ -237,19 +236,11 @@ def dbpage_greeks(
                 st.plotly_chart(fig, use_container_width=True)
 
     # except:
-    else:
-        # Call/Put and Strike not inserted yet 
-        st.write("insert option and strike")
+    # else:
+    #     # Call/Put and Strike not inserted yet 
+    #     st.write("insert option and strike")
 
 
-    # Hiding "Made with Streamlit message"
-    st.write('''
-        <style>
-            footer {visibility:hidden;}
-        </style>
-        ''',
-        unsafe_allow_html = True
-    )
 
 
 def _plotgreeks(
