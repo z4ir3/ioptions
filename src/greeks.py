@@ -336,7 +336,7 @@ def _plotgreeks(
         # griddash="dot",
         # title_standoff=100
     )
-
+    
     # Plot a marker for the ATM data 
     fig.add_trace(
         go.Scatter(

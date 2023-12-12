@@ -51,7 +51,7 @@ def main():
                 "box-arrow-in-right",
                 "stack"
             ], # icons from the bootstrap webpage
-            default_index = 1,
+            default_index = 0,
             orientation = "vertical",
             # orientation = "horizontal"
             # styles={
