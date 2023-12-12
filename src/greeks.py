@@ -123,7 +123,8 @@ def dbpage_greeks(
             )
             r = r / 100
 
-    try:
+    if (cp is not None) and (K is not None):
+      
         # Call/Put and Strike inserted
 
         # Set up Options
@@ -231,10 +232,12 @@ def dbpage_greeks(
                     xlab = True
                 )
                 st.plotly_chart(fig, use_container_width=True)
-    
-    except:
+
+    # except:
+    else:
         # Call/Put and Strike not inserted yet 
         st.write("insert option and strike")
+
 
     # Hiding "Made with Streamlit message"
     st.write('''
