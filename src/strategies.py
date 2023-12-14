@@ -19,8 +19,25 @@ def dbpage_strategies():
     """
     # Page title
     st.title("Option Strategies payoff calculator")
-    
+    # Copyright
+    st.markdown("""
+        <h6>An app made by  
+            <!-- <a href='https://github.com/z4ir3'> -->
+            <a href="http://leonardorocchi.info/">
+                <b>z4ir3</b>
+            </a>
+        </h6>
+    """, unsafe_allow_html=True)
+    # Hiding "Made with Streamlit message"
+    st.write('''
+        <style>
+            footer {visibility:hidden;}
+        </style>
+        ''',
+        unsafe_allow_html = True
+    )
+
     st.write(" ")
 
-    st.subheader(":hourglass_flowing_sand: Under development...")
+    st.subheader(":hourglass_flowing_sand: Work in progress...")
     

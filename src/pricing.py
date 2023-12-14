@@ -1,4 +1,5 @@
 """
+Copyright (c) leonardo-rocchi:z4ir3
 """
 import streamlit as st
 
@@ -15,8 +16,7 @@ from src.utils import get_Smax, get_Smin, bscolors
 from models.blackscholes import BSOption
 
 
-
-def dbpage_greeks(
+def dbpage_pricing(
     nss: int = 80,
     sensname: list = ["Price","Delta","Gamma","Vega","Theta","Lambda"],
     rnd: int = 6
@@ -24,7 +24,16 @@ def dbpage_greeks(
     """
     """
     # Page title
-    st.title("Black-Scholes Option Greeks")
+    st.title("Black-Scholes Option Pricing")
+    # Copyright
+    st.markdown("""
+        <h6>An app made by  
+            <!-- <a href='https://github.com/z4ir3'> -->
+            <a href="http://leonardorocchi.info/">
+                <b>z4ir3</b>
+            </a>
+        </h6>
+    """, unsafe_allow_html=True)
     # Hiding "Made with Streamlit message"
     st.write('''
         <style>
