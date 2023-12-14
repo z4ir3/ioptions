@@ -18,7 +18,7 @@ from models.blackscholes import BSOption
 
 def dbpage_pricing(
     nss: int = 80,
-    sensname: list = ["Price","Delta","Gamma","Vega","Theta","Lambda"],
+    sensname: list = ["Price","Delta","Gamma","Vega","Theta","Rho"],#,"Lambda"],
     rnd: int = 6
 ) -> None:
     """
@@ -217,9 +217,10 @@ def dbpage_pricing(
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-        # Theta and Lambda
+        # # Theta and Lambda
+        # Theta and Rho
         with st.container():
-            plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
+            plot1, plot2 = st.columns(2)
             with plot1: 
                 ss = "Theta"
                 fig = _plotgreeks(
@@ -232,7 +233,8 @@ def dbpage_pricing(
                 )
                 st.plotly_chart(fig, use_container_width=True)
             with plot2:
-                ss = "Lambda"
+                # ss = "Lambda"
+                ss = "Rho"
                 fig = _plotgreeks(
                     Sens[ss], 
                     CP, 
