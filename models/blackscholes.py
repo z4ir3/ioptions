@@ -40,7 +40,7 @@ class BSOption:
         """
         Validate input option type
         """
-        if CP in ["C","P"]:
+        if CP in {"C","P"}:
             return CP
         else:
             raise ValueError("Argument 'CP' must be either 'C' or 'P'")
@@ -151,7 +151,7 @@ class BSOption:
     
     def price(self, *argv) -> float:
         """
-        Black-Scholes pricing model - Premium (Price)
+        Black-Scholes pricing model - Price
         """
         try:
             S = argv[0]
@@ -191,10 +191,11 @@ class BSOption:
                 return np.exp(-self.q*self.T) * self.N(self._d1(S)) 
             else:
                 # The Call has expired
-                if self.price(S) > 0:
-                    return +1
-                else: 
-                    return 0     
+                # if self.price(S) > 0:
+                #     return +1
+                # else: 
+                #     return 0
+                return +1 if self.price(S) > 0 else 0
         else: 
             # Put Option
             if self.T > 0:
@@ -202,10 +203,11 @@ class BSOption:
                 return np.exp(-self.q*self.T) * self.N(self._d1(S)) - 1
             else:
                 # The Put has expired
-                if self.price(S) > 0:
-                    return -1
-                else:             
-                    return 0
+                # if self.price(S) > 0:
+                #     return -1
+                # else:             
+                #     return 0
+                return -1 if self.price(S) > 0 else 0
 
     def llambda(self, *argv) -> float:
         """
@@ -239,7 +241,7 @@ class BSOption:
         # Gamma is the same for both Call and Put            
         if self.T > 0:
             # The Option has not expired yet
-            gm = + np.exp(-self.q*self.T) * self.N(self._d1(S), cum=0) \
+            gm = + np.exp(-self.q*self.T) * self.N(self._d1(S), cum=False) \
                  / (self.S * self.v * np.sqrt(self.T))
             return gm * 100
         else:
@@ -292,8 +294,35 @@ class BSOption:
                    * self.N(self._d1(S), cum=False) 
         else:
             # The Option has expired
-            return 0          
-            
+            return 0
+
+    def rho(self, *argv) -> float:
+        """
+        Black-Scholes pricing model - Rho 
+        """    
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
+        if self.CP == "C":
+            # Call Option
+            if self.T > 0:
+                # The Option has not expired yet
+                return + self.K * self.T * np.exp(-self.r*self.T) \
+                       * self.N(self._d2(S)) 
+            else:
+                # The Option has expired
+                return 0   
+        else:
+            # Put Option
+            if self.T > 0:
+                # The Option has not expired yet
+                return - self.K * self.T * np.exp(-self.r*self.T) \
+                       * self.N(-self._d2(S)) 
+            else:
+                # The Option has expired
+                return 0   
+           
     def greeks(
         self,
         grk: str or None = None, 
@@ -309,9 +338,10 @@ class BSOption:
                 "Delta": round(BSOption.delta(self), rnd),
                 "Gamma": round(BSOption.gamma(self), rnd),
                 "Theta": round(BSOption.theta(self), rnd),
-                "Vega": round(BSOption.vega(self), rnd)
+                "Vega": round(BSOption.vega(self), rnd),
+                "Rho": round(BSOption.rho(self), rnd)
             }
-        if grk == "Price":
+        elif grk == "Price":
             return round(BSOption.price(self), rnd)
         elif grk == "Delta":
             return round(BSOption.delta(self), rnd)
@@ -323,9 +353,10 @@ class BSOption:
             return round(BSOption.theta(self), rnd)
         elif grk == "Lambda":
             return round(BSOption.llambda(self), rnd)
+        elif grk == "Rho":
+            return round(BSOption.rho(self), rnd)
         else:
             raise ValueError("Wrong input greek name")
-
 
     def underlying_set(
         self, 
@@ -361,3 +392,4 @@ class BSOption:
         ops = pd.Series(ops, index=self.underlying_set())
         ops.name = name
         return ops 
+    
