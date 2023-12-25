@@ -18,6 +18,7 @@ from models.optionstrategy import BSOptStrat
 
 
 
+
 def dbpage_strategies():
     """
     """
@@ -25,9 +26,22 @@ def dbpage_strategies():
     st.title("Option Strategies payoff calculator")
     # st.write("---")
 
-    # # Chosen strategy (custom or predefined)
-    # if "chosen_strategy" not in st.session_state:
-    #     st.session_state["chosen_strategy"] = None
+    # Chosen strategy (custom or predefined)
+    if "chosen_strategy" not in st.session_state:
+        st.session_state["chosen_strategy"] = None
+    # else:
+    #     st.session_state["chosen_strategy"] = st.session_state["chosen_strategy"]
+    
+    if "TType" not in st.session_state: 
+        st.session_state["TType"] = "Days"
+
+    if "T" not in st.session_state: 
+        st.session_state["T"] = 0
+
+
+
+
+
     
     # Flag: True is the "Add option" button is pushed, False otherwise
     if "flag_add_option" not in st.session_state:
@@ -46,8 +60,17 @@ def dbpage_strategies():
 
     
 
+
+
+
     # Sidebar data
     with st.sidebar:
+
+        try:
+            st.write(  st.session_state["chosen_strategy"] )
+        except:
+            pass
+
         col1, col2 = st.columns(2)
         with col1:
             # Underlying Price 
@@ -56,10 +79,7 @@ def dbpage_strategies():
                 min_value = 0.1,
                 format = "%f", 
                 value = 100.0,
-                # placeholder = 100, #"Enter Underlying price",
                 help = "Price of the 'Underlying' of the Option(s)",
-                # key = "strike"
-                # on_change=
             )
         with col2:
             # Dividend Yield
@@ -71,131 +91,200 @@ def dbpage_strategies():
                 value = 0.0,
                 help = None,
                 key = "div-yield"
-                # on_change=
             )
-        col1, col2 = st.columns([1,2])
-        with col1:
-            # Expiration type
-            TType = st.selectbox(
-                label = "Expiration type",
-                options = ["Days","Years"],
-                index = 0,
-                key = "dte-type"
-            ) 
-        with col2:
-            # Expiration Slider 
-            T = st.slider(
-                label = f"Time-to-Expiration ({TType}) ($\\tau$)", 
-                min_value = 0 if TType == "Days" else 0.0, 
-                # max_value = 1825 if TType == "Days" else float(5), 
-                max_value = 1095 if TType == "Days" else float(3), 
-                value = 182 if TType == "Days" else 0.50, 
-                # value = 90 if TType == "Days" else 0.25, 
-                step = 1 if TType == "Days" else 0.05, 
-                # format = None, 
-                key = "slider-exp", 
-                help = "Expiration of (non-custom) strategy", 
-                # on_change = get_T(TType, minvt, maxvt)
-            )
-            if TType == "Days": 
-                T = T / 365
         # Interest Rate Slider 
         r = st.slider(
             label = "Interest Rate (%) ($r$)", 
             min_value = 0.0,
             max_value = 8.0,
             value = 2.0, 
-            # key = "slider-irate", 
             help = None, 
-            # on_change = get_T(TType, minvt, maxvt)
         )
         r = r / 100
+
+
+        st.write(st.session_state["chosen_strategy"])
+
+
+
+        # if (st.session_state["chosen_strategy"] != "Custom strategy") and \
+        #    (st.session_state["chosen_strategy"] is not None):
+        #     col1, col2 = st.columns([1,2])
+        #     with col1:
+        #         # Expiration type
+        #         st.session_state["TType"] = st.selectbox(
+        #             label = "Expiration type",
+        #             options = ["Days","Years"],
+        #             index = 0,
+        #             key = "dte-type"
+        #         ) 
+        #     with col2:
+        #         # Expiration Slider 
+        #         T = st.slider(
+        #             label = f"Time-to-Expiration ({st.session_state["TType"]}) ($\\tau$)", 
+        #             min_value = 0 if st.session_state["TType"] == "Days" else 0.0, 
+        #             max_value = 1095 if st.session_state["TType"] == "Days" else float(3), 
+        #             value = 182 if st.session_state["TType"] == "Days" else 0.50, 
+        #             step = 1 if st.session_state["TType"] == "Days" else 0.05, 
+        #             key = "slider-exp", 
+        #             help = "Expiration of (non-custom) strategy", 
+        #             # on_change = get_T(st.session_state["TType"], minvt, maxvt)
+        #         )
+        #         if st.session_state["TType"] == "Days": 
+        #             T = T / 365
+
 
 
     # Get default strategies
     strnames = strategynames()
     with st.container():
-        col1, col2, col3 = st.columns([1,1,1])
+        if (st.session_state["chosen_strategy"] == "Custom strategy"):
+            col1, col2, col3 = st.columns([1,1,1])
+        else:
+            col1, col2, col3, col4 = st.columns([1,0.5,0.5,1])
+        
         with col1:
-            chosen_strategy = st.selectbox(
+            st.selectbox(
+            # chosen_strategy = st.selectbox(
                 label="Choose the strategy",
                 options=strnames,
+                index=None,
+                key="strategyselected",
+                on_change=_ss_chosen_strategy
             )
-            # st.session_state["chosen_strategy"] = chosen_strategy
-
-        if chosen_strategy == "Custom strategy":
-            # with col2:
-            #     st.markdown("""
-            #         <p style="padding:6px;"</p>
-            #     """,unsafe_allow_html=True)
-            #     st.button(
-            #         label="Add Option",
-            #         # help="",
-            #         type="secondary",
-            #         use_container_width=True
-            #     )
+            
+        if (st.session_state["chosen_strategy"] == "Custom strategy"):
             with col2:
                 st.markdown("""
                     <p style="padding:6px;"</p>
                 """,unsafe_allow_html=True)
-                st.button(
+                butt_reset = st.button(
                     label="Reset strategy",
-                    # help="",
                     type="secondary",
                     use_container_width=True
+                )       
+            with col3:
+                butt_calculate = _calcbutton()
+
+        else:
+            with col2:
+                # Expiration type
+                # st.session_state["TType"] = st.selectbox(
+                st.selectbox(
+                    label = "Expiration type",
+                    options = ["Days","Years"],
+                    index = 0,
+                    key = "ttypeselected",
+                    on_change = _ss_ttype
+                )        
+
+            with col3:
+                # Expiration Slider 
+                # T = st.slider(
+                # st.slider(
+                #     label = f"Expiration ({st.session_state['st.session_state["TType"]']}) ($\\tau$)", 
+                #     min_value = 0 if st.session_state["st.session_state["TType"]"] == "Days" else 0.0, 
+                #     max_value = 1095 if st.session_state["st.session_state["TType"]"] == "Days" else float(3), 
+                #     value = 182 if st.session_state["st.session_state["TType"]"] == "Days" else 0.50, 
+                #     step = 1 if st.session_state["st.session_state["TType"]"] == "Days" else 0.05, 
+                #     key = "expiryselected", 
+                #     help = "Expiration of (non-custom) strategy", 
+                #     on_change = _ss_expiry_slider
+                # )
+                st.number_input(
+                    label = f"Expiration ({st.session_state['TType']}) ($\\tau$)", 
+                    min_value = 0 if st.session_state["TType"] == "Days" else 0.0, 
+                    max_value = 1095 if st.session_state["TType"] == "Days" else float(3), 
+                    value = 182 if st.session_state["TType"] == "Days" else 0.50, 
+                    step = 1 if st.session_state["TType"] == "Days" else 0.05, 
+                    key = "expiryselected", 
+                    help = "Expiration of the strategy", 
+                    on_change = _ss_expiry_strategy
                 )
+                if st.session_state["TType"] == "Days": 
+                    st.session_state["T"] = st.session_state["T"] / 365
 
-        with col3:
-            st.markdown("""
-                <p style="padding:6px;"</p>
-            """,unsafe_allow_html=True)
-            st.button(
-                label="Calculate",
-                # help="",
-                type="primary",
-                use_container_width=True
-            )
-
-    if chosen_strategy == "Custom strategy":
+            with col4:
+                butt_calculate = _calcbutton()
+                
 
 
-        with st.expander(label="Enter custom strategy", expanded=True):  
+
+
+    if st.session_state["chosen_strategy"] == "Custom strategy":
+
+        with st.expander(label="Enter custom strategy", expanded=True):
             # if st.session_state["flag_add_option"] == 0
 
             #Must be like nested buttons 
 
-
-            OEntries = _adding_options(CusOptData, OEntries, S, TType)
+            OEntries = _adding_options(
+                CusOptData, 
+                OEntries, 
+                S, 
+                # st.session_state["TType"]
+            )
             st.write(OEntries)
 
 
 
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            # fig = _plotoptions()
-            #     Sens[ss], 
-            #     CP, 
-            #     K, 
-            #     lcol = bscolors(ss),
-            #     atmv = (ATM[ss]["x"], ATM[ss]["y"])
-            # )
-            # st.plotly_chart(fig, use_container_width=True)
-            pass
+    # else:
+    #     col1, col2 = st.columns(2)
+    #     with col1:
+    #         # fig = _plotoptions()
+    #         #     Sens[ss], 
+    #         #     CP, 
+    #         #     K, 
+    #         #     lcol = bscolors(ss),
+    #         #     atmv = (ATM[ss]["x"], ATM[ss]["y"])
+    #         # )
+    #         # st.plotly_chart(fig, use_container_width=True)
+    #         pass
 
-        with col2:
-            # fig = _plotstrategy()
-            # st.plotly_chart(fig, use_container_width=True)
-            pass
+    #     with col2:
+    #         # fig = _plotstrategy()
+    #         # st.plotly_chart(fig, use_container_width=True)
+    #         pass
 
 
+def _ss_chosen_strategy():
+    st.session_state["chosen_strategy"] = st.session_state["strategyselected"]
+
+def _ss_ttype():
+    st.session_state["TType"] = st.session_state["ttypeselected"]
+
+def _ss_expiry_strategy():
+    st.session_state["T"] = st.session_state["expiryselected"]
+
+
+
+
+
+
+
+
+
+
+def _calcbutton():
+    """
+    """
+    st.markdown("""
+        <p style="padding:6px;"</p>
+    """,unsafe_allow_html=True)
+    butt = st.button(
+        label="Calculate",
+        # help="",
+        type="primary",
+        use_container_width=True
+    )
+    return butt
 
 
 def _adding_options(
     CusOptData: dict,
     OEntries: dict, 
     S: float, 
-    TType: str, 
+    # st.session_state["TType"]: str, 
 ):
     """
     """
@@ -239,11 +328,11 @@ def _adding_options(
         with col3:
             # Expiration 
             To = st.number_input(
-                label = f"Expiration ({TType}) ($\\tau$)",
-                min_value = 1 if TType == "Days" else 0.03, 
-                max_value = 1095 if TType == "Days" else float(3), 
-                value = 182 if TType == "Days" else 0.50, 
-                format = "%d" if TType == "Days" else "%f"
+                label = f"Expiration ({st.session_state['TType']}) ($\\tau$)",
+                min_value = 1 if st.session_state["TType"] == "Days" else 0.03, 
+                max_value = 1095 if st.session_state["TType"] == "Days" else float(3), 
+                value = 182 if st.session_state["TType"] == "Days" else 0.50, 
+                format = "%d" if st.session_state["TType"] == "Days" else "%f"
             )
         with col4:
             # Volatility
