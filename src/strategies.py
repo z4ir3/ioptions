@@ -44,7 +44,7 @@ def dbpage_strategies():
     CusOptData = dict()
     OEntries = dict()
 
-
+    
 
     # Sidebar data
     with st.sidebar:
