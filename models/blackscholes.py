@@ -7,6 +7,10 @@ import numpy as np
 
 from scipy.stats import norm
 
+import streamlit as st
+
+
+
 class BSOption:
     def __init__(
         self, 
@@ -341,7 +345,7 @@ class BSOption:
         try:
             S = argv[0]
         except:
-            S = self.S
+            S = self.S        
         Smin = S * (1 - bnd)
         Smax = S * (1 + bnd)
         SS = np.linspace(Smin,S,npr).tolist() + np.linspace(S,Smax,npr)[1:].tolist()

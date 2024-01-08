@@ -31,13 +31,18 @@ def dbpage_strategies():
         st.session_state["chosen_strategy"] = None
     # else:
     #     st.session_state["chosen_strategy"] = st.session_state["chosen_strategy"]
-    
+
+
+    if "S" not in st.session_state: 
+        st.session_state["S"] = 100
+    if "q" not in st.session_state: 
+        st.session_state["q"] = 0
+    if "r" not in st.session_state: 
+        st.session_state["r"] = 2
     if "TType" not in st.session_state: 
         st.session_state["TType"] = "Days"
-
     if "T" not in st.session_state: 
         st.session_state["T"] = 0
-
 
 
 
@@ -74,33 +79,46 @@ def dbpage_strategies():
         col1, col2 = st.columns(2)
         with col1:
             # Underlying Price 
-            S = st.number_input(
+            # S = st.number_input(
+            st.number_input(
                 label = "Underlying Price ($S$)",
                 min_value = 0.1,
                 format = "%f", 
                 value = 100.0,
-                help = "Price of the 'Underlying' of the Option(s)",
+                key = "underlyingselected",
+                help = "Price of the 'Underlying' asset of the Option(s)",
+                on_change = _ss_S
             )
         with col2:
             # Dividend Yield
-            q = st.number_input(
+            # q = st.number_input(
+            st.number_input(
                 label = "Dividend Yield ($q$)",
                 min_value = 0.0,
                 max_value = None,
                 format = "%f",
                 value = 0.0,
                 help = None,
-                key = "div-yield"
+                key = "divyieldselected",
+                on_change = _ss_q
             )
         # Interest Rate Slider 
-        r = st.slider(
+        # r = st.slider(
+        st.slider(
             label = "Interest Rate (%) ($r$)", 
             min_value = 0.0,
             max_value = 8.0,
             value = 2.0, 
-            help = None, 
+            help = None,
+            key = "iratedselected",
+            on_change = _ss_r
         )
-        r = r / 100
+        # st.session_state["r"] = st.session_state["r"] / 100
+
+        # st.write(st.session_state["r"])
+
+
+
 
 
         st.write(st.session_state["chosen_strategy"])
@@ -209,9 +227,22 @@ def dbpage_strategies():
                 
 
 
+    st.write(st.session_state["S"])
+    st.write(st.session_state["q"])
+    st.write(st.session_state["r"])
+
+    # Create strategy class with the underlying price, 
+    # the time-to-maturity, and the dividend yield
+    Strategy = BSOptStrat(
+        S = st.session_state["S"], 
+        r = st.session_state["r"]/100, 
+        q = st.session_state["q"]
+    )
+
 
 
     if st.session_state["chosen_strategy"] == "Custom strategy":
+        # Custom strategy
 
         with st.expander(label="Enter custom strategy", expanded=True):
             # if st.session_state["flag_add_option"] == 0
@@ -225,6 +256,15 @@ def dbpage_strategies():
                 # st.session_state["TType"]
             )
             st.write(OEntries)
+
+
+    else:
+        # Pre-defined strategy
+        pass
+
+
+
+
 
 
 
@@ -247,14 +287,24 @@ def dbpage_strategies():
     #         pass
 
 
-def _ss_chosen_strategy():
-    st.session_state["chosen_strategy"] = st.session_state["strategyselected"]
+
+def _ss_S():
+    st.session_state["S"] = st.session_state["underlyingselected"]
+
+def _ss_q():
+    st.session_state["q"] = st.session_state["divyieldselected"]
+
+def _ss_r():
+    st.session_state["r"] = st.session_state["irateselected"]
 
 def _ss_ttype():
     st.session_state["TType"] = st.session_state["ttypeselected"]
 
 def _ss_expiry_strategy():
     st.session_state["T"] = st.session_state["expiryselected"]
+
+def _ss_chosen_strategy():
+    st.session_state["chosen_strategy"] = st.session_state["strategyselected"]
 
 
 

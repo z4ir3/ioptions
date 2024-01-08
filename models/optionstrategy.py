@@ -3,10 +3,14 @@ Black-Scholes option pricing strategy class
 """
 
 import pandas as pd
-# import numpy as np
+import numpy as np
 from scipy.stats import norm
 
 from models.blackscholes import BSOption
+
+
+import streamlit as st
+
 
 
 class BSOptStrat:
@@ -28,28 +32,29 @@ class BSOptStrat:
         self.r = r
         self.q = q
         self.instruments = [] 
-        self.payoffs = BSOptStrat.init_payoffs(S)
-        self.payoffs_exp = BSOptStrat.init_payoffs(S)
+        self.payoffs = self.init_payoffs()
+        self.payoffs_exp = self.init_payoffs()
         self.payoffs_exp_df = pd.DataFrame()
-    
 
-    def init_payoffs(S):
-        '''
-        Generating a set of underlying prices from the given input current underlying price S
-        '''
-        ss = pd.Series([0] * len(BSOption.underlying_set(0,S)), index = BSOption.underlying_set(0,S))
-        return ss
- 
-        
+    def init_payoffs(self):
+        """
+        Generating a set of underlying prices from 
+        the given input current underlying price S
+        """
+        # ss = pd.Series([0] * len(BSOption.underlying_set(0,S)), index = BSOption.underlying_set(0,S))
+        # return ss
+        SS = self._underlying_set() 
+        return pd.Series([0] * len(SS), index = SS)
+    
     def call(self, NP=+1, K=100, T=0.25, v=0.30, M=100, optprice=None):
-        '''
+        """
         Creating a Call Option 
         - NP : Net Position, >0 for long positions, <0 for short positions 
         - K  : Strike price
         - T  : Time-to-Maturity in years 
         - v  : Volatility
         - M  : Multiplier of the Option (number of stocks allowed to buy/sell)
-        '''
+        """
         # Create Call Option with current data
         option = BSOption("C", self.S, K, T, self.r, v, q=self.q)
         
@@ -77,14 +82,14 @@ class BSOptStrat:
             
 
     def put(self, NP=+1, K=100, T=0.25, v=0.30, M=100, optprice=None):
-        '''
+        """
         Creating a Put Option 
         - NP : Net Position, >0 for long positions, <0 for short positions 
         - K  : Strike price
         - T  : Time-to-Maturity in years 
         - v  : Volatility
         - M  : Multiplier of the Option (number of stocks allowed to buy/sell)
-        '''
+        """
         # Create Put Option with current data
         option = BSOption("P", self.S, K, T, self.r, v, q=self.q)
         
@@ -105,14 +110,14 @@ class BSOptStrat:
 
 
     def update_strategy(self, CP, price, NP, K, T, v, M, payoffs):
-        '''
+        """
         Updates the current payoffs of the option strategy as soon as that a new option is inserted. 
         The current list of instruments composing the strategy is also updated        
         
         New input(s): 
         - price   : price of the input option 
         - payoffs : Payoff of the input option (for a set of given underlying prices)
-        '''
+        """
         # Update current payoff strategy with new instrument payoff 
         self.update_payoffs(payoffs, T=T)
 
@@ -130,10 +135,10 @@ class BSOptStrat:
 
 
     def update_payoffs(self, payoffs, T=0):
-        '''
+        """
         Update current payoff strategy with new instrument payoff.
         It updates either the payoff for T>0 or at maturity for T=0
-        '''
+        """
         if T > 0:
             self.payoffs     = payoffs + self.payoffs
         else:
@@ -141,9 +146,9 @@ class BSOptStrat:
         
  
     def option_at_exp(self, CP, price, NP, K, v, M):
-        '''
+        """
         Calculates the payoff of the option at maturity (T=0)
-        '''
+        """
         # Create Option at maturity (calling class with T = 0) 
         option = BSOption(CP, self.S, K, 0, self.r, v, q=self.q)
 
@@ -160,9 +165,9 @@ class BSOptStrat:
 
 
     def update_payoffs_exp_df(self, payoffs_exp):
-        '''
+        """
         Update the dataframe of payoff at maturity of single options with the new current inserted option 
-        '''
+        """
         # Concat new option payoff with current dataframe
         self.payoffs_exp_df = pd.concat([self.payoffs_exp_df, pd.DataFrame(payoffs_exp)], axis=1)
 
@@ -171,11 +176,11 @@ class BSOptStrat:
                 
         
     def describe_strategy(self): #, stratname=None):
-        '''
+        """
         This method can be called once the option has been set.
         Here, all option data saved so far in the list of instrument are now saved 
         in a dictionary and the cost of entering the strategy is also computed 
-        '''       
+        """       
         # Create dictionary of options inserted in the strategy 
         StratData = dict()
         
@@ -194,23 +199,40 @@ class BSOptStrat:
 
         return StratData
         
-        
     def get_payoffs_exp_df(self):
-        '''
+        """
         Returns a dataframe with the payoff at maturity of the strategy's option
-        '''
+        """
         return self.payoffs_exp_df
 
-
     def get_payoffs(self):
-        '''
+        """
         Returns the current strategy payoff
-        '''
+        """
         return self.payoffs
 
-    
     def get_payoffs_exp(self):
-        '''
+        """
         Returns the strategy payoff at maturity 
-        '''
+        """
         return self.payoffs_exp
+
+    def _underlying_set(
+        self, 
+        bnd: float = 0.4, 
+        npr: int = 10,
+        *argv
+    ) -> list:
+        """
+        Generate a set of underlying prices lower and higher 
+        than the current input underlying price.
+        The limit is (-bnd,+bnd) of the input underlying price (in %).
+        """
+        try:
+            S = argv[0]
+        except:
+            S = self.S
+        Smin = S * (1 - bnd)
+        Smax = S * (1 + bnd)
+        SS = np.append(np.linspace(Smin,S,npr),np.linspace(S,Smax,npr)[1:])
+        return list(SS)
