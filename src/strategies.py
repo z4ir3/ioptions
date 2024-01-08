@@ -42,8 +42,13 @@ def dbpage_strategies():
     if "TType" not in st.session_state: 
         st.session_state["TType"] = "Days"
     if "T" not in st.session_state: 
-        st.session_state["T"] = 0
-
+        st.session_state["T"] = 182
+    # Auxiliary increase/decrese for strike prices in the 
+    # pre-defined (non-custom) strategies (according to 
+    # current chosen level of the underlying price S)
+    if "dS" not in st.session_state: 
+        st.session_state["dS"] = 5/100
+ 
 
 
 
@@ -219,17 +224,17 @@ def dbpage_strategies():
                     help = "Expiration of the strategy", 
                     on_change = _ss_expiry_strategy
                 )
-                if st.session_state["TType"] == "Days": 
-                    st.session_state["T"] = st.session_state["T"] / 365
+                # if st.session_state["TType"] == "Days": 
+                #     st.session_state["T"] = st.session_state["T"] / 365
 
             with col4:
                 butt_calculate = _calcbutton()
                 
 
 
-    st.write(st.session_state["S"])
-    st.write(st.session_state["q"])
-    st.write(st.session_state["r"])
+    # st.write(st.session_state["S"])
+    # st.write(st.session_state["q"])
+    # st.write(st.session_state["r"])
 
     # Create strategy class with the underlying price, 
     # the time-to-maturity, and the dividend yield
@@ -260,7 +265,25 @@ def dbpage_strategies():
 
     else:
         # Pre-defined strategy
-        pass
+        
+        st.write("AQUI:", st.session_state["T"], st.session_state["TType"])
+
+
+        T_aux = st.session_state["T"] 
+        T_aux = T_aux/365 if st.session_state["TType"] == "Days" else T_aux
+ 
+        match st.session_state["chosen_strategy"]:
+            # Naked Strategies (ATM options)
+            case "Long Call": 
+                Strategy.call(
+                    NP = 1, 
+                    K = st.session_state["S"], 
+                    T = st.session_state["T"], #T_aux,
+                    v = 30/100
+                )
+
+                st.table(Strategy.get_payoffs())
+
 
 
 

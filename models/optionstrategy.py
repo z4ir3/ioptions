@@ -46,33 +46,37 @@ class BSOptStrat:
         SS = self._underlying_set() 
         return pd.Series([0] * len(SS), index = SS)
     
-    def call(self, NP=+1, K=100, T=0.25, v=0.30, M=100, optprice=None):
+    def call(self, NP=+1, K=100, T=0.25, v=0.30, M=100, oprice=None):
         """
         Creating a Call Option 
-        - NP : Net Position, >0 for long positions, <0 for short positions 
-        - K  : Strike price
-        - T  : Time-to-Maturity in years 
-        - v  : Volatility
-        - M  : Multiplier of the Option (number of stocks allowed to buy/sell)
+        NP : Net Position, >0 for long positions, <0 for short positions 
+        K  : Strike price
+        T  : Time-to-Maturity in years 
+        v  : Volatility
+        M  : Multiplier of the Option (number of stocks allowed to buy/sell)
         """
         # Create Call Option with current data
         option = BSOption("C", self.S, K, T, self.r, v, q=self.q)
         
         # Call payoff before expiration (T>0)
-        if optprice is not None:
-            call_price = optprice
-        else:
-            call_price = option.price()
+        call_price = oprice if oprice is not None else option.price()
         
+        st.write(self.S, K, T, self.r, self.q)
+        st.write(call_price)
+
         # Generating the set of payoff for at different underlying prices 
-        # Here, option.setprices() are the prices of the call (i.e., as if it were long)
+        # Here, option.setprices() are the prices of the call 
+        # (i.e., as if it were long):
         # - If NP > 0, the price must be paid, then:
         #   payoffs = option.setprices() * NP * M  - Call price * NP * M
         # - If NP < 0, the price is to be received, then:
         #   payoffs = Call price * abs(NP) * M - option.setprices() * abs(NP) * M 
         #           = option.setprices() * NP * M  - Call price * NP * M
         # Summary: ( option.setprices() - call_price ) * NP * M
-        payoffs = ( option.setprices() - call_price ) * NP * M
+        
+        # payoffs = ( option.setprices() - call_price ) * NP * M
+        
+        payoffs = ( option.oprices() - call_price ) * NP * M
 
         # Update strategy instruments with current instrument data
         self.update_strategy("C", call_price, NP, K, T, v, M, payoffs)
@@ -81,7 +85,7 @@ class BSOptStrat:
         self.option_at_exp("C", call_price, NP, K, v, M)
             
 
-    def put(self, NP=+1, K=100, T=0.25, v=0.30, M=100, optprice=None):
+    def put(self, NP=+1, K=100, T=0.25, v=0.30, M=100, oprice=None):
         """
         Creating a Put Option 
         - NP : Net Position, >0 for long positions, <0 for short positions 
@@ -94,8 +98,8 @@ class BSOptStrat:
         option = BSOption("P", self.S, K, T, self.r, v, q=self.q)
         
         # Call payoff before expiration (T>0)
-        if optprice is not None:
-            put_price = optprice
+        if oprice is not None:
+            put_price = oprice
         else:
             put_price = option.price()
         
@@ -111,9 +115,10 @@ class BSOptStrat:
 
     def update_strategy(self, CP, price, NP, K, T, v, M, payoffs):
         """
-        Updates the current payoffs of the option strategy as soon as that a new option is inserted. 
-        The current list of instruments composing the strategy is also updated        
-        
+        Updates the current payoffs of the option strategy 
+        as soon as that a new option is inserted. 
+        The current list of instruments composing 
+        the strategy is also updated. 
         New input(s): 
         - price   : price of the input option 
         - payoffs : Payoff of the input option (for a set of given underlying prices)
@@ -140,7 +145,7 @@ class BSOptStrat:
         It updates either the payoff for T>0 or at maturity for T=0
         """
         if T > 0:
-            self.payoffs     = payoffs + self.payoffs
+            self.payoffs = payoffs + self.payoffs
         else:
             self.payoffs_exp = payoffs + self.payoffs_exp
         
@@ -155,12 +160,15 @@ class BSOptStrat:
         # Option payoff at maturity: 
         # - Call: (max(S - K;0) - C) * NP * M
         # - Put:  (P - max(S - K;0)) * NP * M
-        payoffs_exp = ( option.setprices() - price ) * NP * M        
+        # payoffs_exp = ( option.setprices() - price ) * NP * M        
+        payoffs_exp = ( option.oprices() - price ) * NP * M
 
-        # Update the dataframe of payoff at maturity of single options with the new current inserted option 
+        # Update the dataframe of payoff at maturity 
+        # of single options with the new current inserted option 
         self.update_payoffs_exp_df(payoffs_exp)
 
-        # Update the strategy payoff at maturity with the one of the new current inserted option 
+        # Update the strategy payoff at maturity with the 
+        # one of the new current inserted option 
         self.update_payoffs(payoffs_exp, T=0)
 
 
@@ -236,3 +244,4 @@ class BSOptStrat:
         Smax = S * (1 + bnd)
         SS = np.append(np.linspace(Smin,S,npr),np.linspace(S,Smax,npr)[1:])
         return list(SS)
+    
