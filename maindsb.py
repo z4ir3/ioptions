@@ -8,8 +8,8 @@ import sys
 sys.path.insert(1,"/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/streamlit_option_menu")
 from streamlit_option_menu import option_menu 
 
-from src.pricing import dbpage_pricing
-from src.strategies import dbpage_strategies
+# from src.pricing import dbpage_pricing
+# from src.strategies import dbpage_strategies
 
 
 def main():
