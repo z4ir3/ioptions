@@ -13,7 +13,9 @@ pio.renderers.default = "browser"
 import plotly.graph_objs as go 
 
 from src.utils import get_Smax, get_Smin, bscolors
-from models.blackscholes import BSOption
+# from models.blackscholes import BSOption
+
+from models.blackscholes import BlackScholesCall
 
 
 def dbpage_pricing(
@@ -69,7 +71,7 @@ def dbpage_pricing(
     with par3:
         # Dividend Yield
         q = st.number_input(
-            label = "Dividend Yield ($q$)",
+            label = "Dividend Yield (%) ($q$)",
             min_value = 0.0,
             max_value = None,
             format = "%f",
@@ -78,6 +80,7 @@ def dbpage_pricing(
             key = "div-yield"
             # on_change=
         )
+        q = q / 100
     with par4:
         # Expiration type
         TType = st.selectbox(
@@ -123,7 +126,6 @@ def dbpage_pricing(
             v = v / 100
         with col2:
             # Interes Rate Slider 
-            # r = st.sidebar.slider(
             r = st.slider(
                 label = "Interest Rate (%) ($r$)", 
                 min_value = 0.0,
@@ -139,12 +141,36 @@ def dbpage_pricing(
         # Call/Put and Strike inserted
 
         # Set up Options
+        # uset = np.linspace(get_Smin(K),get_Smax(K),nss)
+        # Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-        Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+
+        if CP == "C":
+            Options = [BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+        else:
+            pass
+            # Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+
+
+        st.write(Options[0])
+        st.write(Options[0].params)
+        st.write(Options[50].vega())
+        st.write(Options[50].gamma())
+
+
+        # # breakpoint()
+
+
+
+
+
 
         Sens = dict()
         for s in sensname: 
-            grk = [o.greeks(grk=s, rnd=rnd) for o in Options]
+            # grk = [o.greeks(grk=s, rnd=rnd) for o in Options]
+            grk = [o.greeks(grk=s) for o in Options]
+
             Sens[s] = pd.Series(grk, index=uset, name=s)
         # st.write(Sens)
         # st.write(options[40].greeks()["Price"])
