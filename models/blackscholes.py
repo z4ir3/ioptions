@@ -260,10 +260,12 @@ class BSOption:
             # Call Option
             if self.T > 0:
                 # The Call has not expired yet
-                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) \
-                       / (2*np.sqrt(self.T)) \
-                       + self.q*np.exp(-self.q*self.T) * self.S * self.N(self._d1(S))   \
-                       - self.r*np.exp(-self.r*self.T) * self.K * self.N(self._d2(S))
+                return (
+                    - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) 
+                    / (2*np.sqrt(self.T)) 
+                    + self.q*np.exp(-self.q*self.T) * self.S * self.N(self._d1(S))
+                    - self.r*np.exp(-self.r*self.T) * self.K * self.N(self._d2(S))
+                )
             else:
                 # The Call has expired
                 return 0    
@@ -271,10 +273,12 @@ class BSOption:
             # Put Option
             if self.T > 0:
                 # The Put has not expired yet
-                return - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) \
-                       / (2*np.sqrt(self.T)) \
-                       - self.q*np.exp(-self.q*self.T) * self.S * (1 - self.N(self._d1(S)))   \
-                       + self.r*np.exp(-self.r*self.T) * self.K * (1 - self.N(self._d2(S)))
+                return (
+                    - np.exp(-self.q*self.T) * self.S * self.v * self.N(self._d1(S), cum=0) 
+                    / (2*np.sqrt(self.T))
+                    - self.q*np.exp(-self.q*self.T) * self.S * (1 - self.N(self._d1(S)))
+                    + self.r*np.exp(-self.r*self.T) * self.K * (1 - self.N(self._d2(S)))
+                )
             else:
                 # The Put has expired
                 return 0
@@ -290,8 +294,10 @@ class BSOption:
         # Vega is the same for both Call and Put            
         if self.T > 0:
             # The Option has not expired yet
-            return + np.exp(-self.q*self.T) * self.S * np.sqrt(self.T) \
-                   * self.N(self._d1(S), cum=False) 
+            return (
+                + np.exp(-self.q*self.T) * self.S * np.sqrt(self.T)
+                * self.N(self._d1(S), cum=False) 
+            )
         else:
             # The Option has expired
             return 0
@@ -299,6 +305,7 @@ class BSOption:
     def rho(self, *argv) -> float:
         """
         Black-Scholes pricing model - Rho 
+        First Derivative of the price with respect to the Interest Rate
         """    
         try:
             S = argv[0]
@@ -308,8 +315,10 @@ class BSOption:
             # Call Option
             if self.T > 0:
                 # The Option has not expired yet
-                return + self.K * self.T * np.exp(-self.r*self.T) \
-                       * self.N(self._d2(S)) 
+                return (
+                    + self.K * self.T * np.exp(-self.r*self.T) 
+                    * self.N(self._d2(S)) 
+                )
             else:
                 # The Option has expired
                 return 0   
@@ -317,15 +326,17 @@ class BSOption:
             # Put Option
             if self.T > 0:
                 # The Option has not expired yet
-                return - self.K * self.T * np.exp(-self.r*self.T) \
-                       * self.N(-self._d2(S)) 
+                return (
+                    - self.K * self.T * np.exp(-self.r*self.T)
+                    * self.N(-self._d2(S))
+                ) 
             else:
                 # The Option has expired
                 return 0   
            
     def greeks(
         self,
-        grk: str or None = None, 
+        grk: str | None = None, 
         rnd: int = 2
     ) -> dict:
         """
