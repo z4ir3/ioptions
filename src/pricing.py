@@ -120,6 +120,8 @@ def dbpage_pricing(
             st.subheader("Black model")
         elif ostyle == "American":
             st.subheader("Binomial-Tree Model (Cox-Ross-Rubinstein)")
+            st.write("...to be implemented yet")
+            return 0
 
         # Rest of widgets: expiration, volatility, and interest rate
         col1, col2, col3, col4 = st.columns([0.5,1,1,0.5], gap="small") 
