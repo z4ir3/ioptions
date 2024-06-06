@@ -15,7 +15,7 @@ import plotly.graph_objs as go
 from src.utils import get_Smax, get_Smin, bscolors
 # from models.blackscholes import BSOption
 
-from models.blackscholes import BlackScholesCall
+from models.blackscholes import BlackScholesCall, BlackScholesPut
 
 
 def dbpage_pricing(
@@ -26,16 +26,16 @@ def dbpage_pricing(
     """
     """
     # Page title
-    st.title("Black-Scholes Option Pricing")
-    # Copyright
-    st.markdown("""
-        <h6>An app made by  
-            <!-- <a href='https://github.com/z4ir3'> -->
-            <a href="http://leonardorocchi.info/">
-                <b>z4ir3</b>
-            </a>
-        </h6>
-    """, unsafe_allow_html=True)
+    st.title("Options Pricing Models")
+    # # Copyright
+    # st.markdown("""
+    #     <h6>An app made by  
+    #         <!-- <a href='https://github.com/z4ir3'> -->
+    #         <a href="http://leonardorocchi.info/">
+    #             <b>z4ir3</b>
+    #         </a>
+    #     </h6>
+    # """, unsafe_allow_html=True)
     # Hiding "Made with Streamlit message"
     st.write('''
         <style>
@@ -45,135 +45,144 @@ def dbpage_pricing(
         unsafe_allow_html = True
     )
 
-    par1, par2, par3, par4 = st.columns([1,1,1,0.5], gap="small") 
-    with par1:
-        # Call or Put price
-        cp = st.selectbox(
-            label = "Option type",
-            options = ["Call","Put"],
-            index = None,
-            placeholder = "Call or Put",
-            key = "option-type"
-        )
-        CP = "C" if cp == "Call" else "P" 
-    with par2:
-        # Strike price 
-        K = st.number_input(
-            label = "Option strike ($K$)",
-            min_value = 0.1,
-            format = "%f", 
-            value = None, #100.0,
-            placeholder = "Enter Strike price",
-            help = "'Exercise' price of the option",
-            key = "strike"
-            # on_change=
-        ) 
-    with par3:
-        # Dividend Yield
-        q = st.number_input(
-            label = "Dividend Yield (%) ($q$)",
-            min_value = 0.0,
-            max_value = None,
-            format = "%f",
-            value = 0.0,
-            help = None,
-            key = "div-yield"
-            # on_change=
-        )
-        q = q / 100
-    with par4:
-        # Expiration type
-        TType = st.selectbox(
-            label = "Expiration type",
-            options = ["Days","Years"],
-            index = 0,
-            key = "dte-type"
-        ) 
-
     with st.sidebar:
+        # Main options data
+
+        col1, col2 = st.columns([1,1])
+        with col1:
+            ostyle = st.selectbox(
+                label = "Option style",
+                options = ["European","American"],
+                index = None,
+                placeholder = "European or American",
+                key = "option-style"
+            )
+        with col2:
+            # Call or Put price
+            isdisabled = True if ostyle == "American" else False
+            underlying_type = st.selectbox(
+                label = "Underlying type",
+                options = ["Stock","Index"],
+                index = None,
+                placeholder = "Stock or Index Index" if ostyle == "European" else "Stock",
+                disabled = isdisabled,
+                key = "underlying-style"
+            )
+            if isdisabled:
+                underlying_type = "Stock"
+
         with st.container():
+            # Call or Put price
+            cp = st.selectbox(
+                label = "Option type",
+                options = ["Call","Put"],
+                index = None,
+                placeholder = "Call or Put",
+                key = "option-type"
+            )
+            CP = "C" if cp == "Call" else "P" 
+        col1, col2 = st.columns([1,1])
+        with col1:
+            # Strike price 
+            K = st.number_input(
+                label = "Option strike ($K$)",
+                min_value = 0.1,
+                format = "%f", 
+                value = None, #100.0,
+                placeholder = "Enter Strike price",
+                help = "'Exercise' price of the option",
+                key = "strike"
+            ) 
+        with col2:
+            # Dividend Yield
+            q = st.number_input(
+                label = "Dividend Yield (%) ($q$)",
+                min_value = 0.0,
+                max_value = None,
+                format = "%f",
+                value = 0.0, #if ostyle == "European" else None,
+                help = "Annual dividend yield stock return",
+                disabled = True if (ostyle == "American" or underlying_type == "Index") else False,
+                key = "div-yield"
+            )
+            q = q / 100
+
+    cd1 = ostyle in {"European","American"} 
+    cd2 = underlying_type in {"Stock","Index"} 
+    cd3 = cp in {"Call","Put"}
+    cd4 = K is not None 
+    if (cd1 and cd2 and cd3 and cd4):
+
+        # Print of the model pricing used 
+        if ostyle == "European" and underlying_type == "Stock":
+            st.subheader("Black-Scholes model")
+        elif underlying_type == "Index":
+            st.subheader("Black model")
+        elif ostyle == "American":
+            st.subheader("Binomial-Tree Model (Cox-Ross-Rubinstein)")
+
+        # Rest of widgets: expiration, volatility, and interest rate
+        col1, col2, col3, col4 = st.columns([0.5,1,1,0.5], gap="small") 
+        with col1:
+            # Expiration type
+            TType = st.selectbox(
+                label = "Expiration type",
+                options = ["Days","Years"],
+                index = 0,
+                key = "dte-type"
+            ) 
+        with col2:
             # Expiration Slider 
             T = st.slider(
-                label = f"Time-to-Expiration ({TType}) ($\\tau$)", 
+                label = "Years to Expiration ($\\tau$)" if TType == "Years" else "Days to Expiration ($\\tau$)",
                 min_value = 0 if TType == "Days" else 0.0, 
-                # max_value = 1825 if TType == "Days" else float(5), 
                 max_value = 1095 if TType == "Days" else float(3), 
                 value = 182 if TType == "Days" else 0.50, 
-                # value = 90 if TType == "Days" else 0.25, 
-                step = 1 if TType == "Days" else 0.05, 
-                # format = None, 
+                step = 1 if TType == "Days" else 0.10, 
                 key = "slider-exp", 
-                help = None, 
-                # on_change = get_T(TType, minvt, maxvt)
+                help = None
             )
             if TType == "Days": 
                 T = T / 365
-
-        col1, col2 = st.columns(2)
-        with col1:
+        with col3:
             # Volatilty Slider 
             v = st.slider(
                 label =  "Volatility (%) ($\sigma$)", 
                 min_value = 1.0,
-                max_value = 99.9,
+                max_value = 99.0,
                 value = 30.0, 
                 step = 1.0, 
                 # format = None, 
                 key = "slider-vola", 
-                help = None, 
-                # on_change = get_T(TType, minvt, maxvt)
+                help = "Implied Volatility", 
             )
             v = v / 100
-        with col2:
+        with col4:
             # Interes Rate Slider 
             r = st.slider(
                 label = "Interest Rate (%) ($r$)", 
                 min_value = 0.0,
-                max_value = 8.0,
-                value = 2.0, 
+                max_value = 5.0,
+                value = 1.0, 
                 key = "slider-irate", 
-                help = None, 
-                # on_change = get_T(TType, minvt, maxvt)
+                help = "Risk-free rate"
             )
             r = r / 100
 
-    if (cp is not None) and (K is not None):
-        # Call/Put and Strike inserted
+        # Main calculations 
 
         # Set up Options
-        # uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-        # Options = [BSOption(CP=CP, S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
-
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-
         if CP == "C":
             Options = [BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
         else:
-            pass
-            # Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
-
-
-        st.write(Options[0])
-        st.write(Options[0].params)
-        st.write(Options[50].vega())
-        st.write(Options[50].gamma())
-
-
-        # # breakpoint()
-
-
-
-
-
+            Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
 
         Sens = dict()
         for s in sensname: 
             # grk = [o.greeks(grk=s, rnd=rnd) for o in Options]
             grk = [o.greeks(grk=s) for o in Options]
-
             Sens[s] = pd.Series(grk, index=uset, name=s)
-        # st.write(Sens)
-        # st.write(options[40].greeks()["Price"])
 
         # Save ATM points for metric and to be passed in plot functions
         ATM = {k: dict() for k in sensname}
@@ -184,8 +193,6 @@ def dbpage_pricing(
                 atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - K)))
                 ATM[s]["x"] = [Sens[s].index[atmidx]]
                 ATM[s]["y"] = [Sens[s].values[atmidx]]
-                # ATM[s]["x"] = [K]
-                # ATM[s]["y"] = [Sens[s].loc[K]]
                 with atms[idx]:
                     st.metric(
                         label = f"ATM {s}",
@@ -243,7 +250,6 @@ def dbpage_pricing(
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-        # # Theta and Lambda
         # Theta and Rho
         with st.container():
             plot1, plot2 = st.columns(2)
@@ -272,20 +278,13 @@ def dbpage_pricing(
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-    # except:
-    # else:
-    #     # Call/Put and Strike not inserted yet 
-    #     st.write("insert option and strike")
-
-
-
 
 def _plotgreeks(
     data: pd.Series,
     CP: str,
     K: float,
     lcol: str,    
-    atmv: tuple or None = None,
+    atmv: tuple | None = None,
     yaxside: str = "left",
     gridcolor: str = "#EEF4F4",
     xlab: bool = False
@@ -324,7 +323,7 @@ def _plotgreeks(
         )
     )
 
-    # Lable x-axis
+    # Label x-axis
     if xlab:
         xlabel = f"Underlying S (K={K})"
     else:
@@ -373,7 +372,6 @@ def _plotgreeks(
         # griddash="dot",
         # title_standoff=100
     )
-
     # Plot a marker for the ATM data 
     fig.add_trace(
         go.Scatter(
@@ -387,5 +385,5 @@ def _plotgreeks(
             showlegend = True #True
         )
     )
-
+    
     return fig
