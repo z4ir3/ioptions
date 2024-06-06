@@ -461,7 +461,7 @@ class BlackScholes:
         if S > 0:
             return S
         else:
-            raise ValueError("Argument 'S' (underlying price) must be greater than 0")
+            raise ValueError(f"The Underlying Price must be greater than 0 (got{S})")
             
     @staticmethod 
     def _valid_strike(K: float) -> float:
@@ -471,17 +471,17 @@ class BlackScholes:
         if K > 0:
             return K
         else:
-            raise ValueError("Argument 'K' (strike price) must be greater than 0")
+            raise ValueError(f"The Srike Price must be greater than 0 (got{K})")
     
     @staticmethod 
     def _valid_maturity(T: float) -> float:
         """
-        Validate input maturity
+        Validate input Years-to-Maturity (YTE)
         """
         if T >= 0:
             return T
         else:
-            raise ValueError("Argument 'T' (maturity) cannot be negative")
+            raise ValueError(f"The Years-to-Maturity cannot be negative (got{T})")
 
     @staticmethod 
     def _valid_intrate(r: float) -> float:
@@ -491,7 +491,7 @@ class BlackScholes:
         if r >= 0:
             return r
         else:
-            raise ValueError("Argument 'r' (interest rate) cannot be negative")
+            raise ValueError(f"The Interest Rate cannot be negative (got{r})")
 
     @staticmethod 
     def _valid_vola(v: float) -> float:
@@ -501,7 +501,7 @@ class BlackScholes:
         if v > 0:
             return v
         else:
-            raise ValueError("Argument 'v' (volatility) must be greater than 0")
+            raise ValueError(f"The Implied Volatility must be greater than 0 (got{v})")
     
     @staticmethod 
     def _valid_yield(q: float) -> float:
@@ -511,7 +511,7 @@ class BlackScholes:
         if q >= 0:
             return q
         else:
-            raise ValueError("Argument 'q' (dividend yield) cannot be negative")
+            raise ValueError(f"The Dividen Yield must be greater than 0 (got{q})")
 
     @staticmethod
     def _Npdf(x: float) -> float:
@@ -633,7 +633,8 @@ class BlackScholesCall(BlackScholes):
         
     def delta(self, *argv) -> float:
         """
-        Call delta
+        Call Delta
+        First derivative of the Price with respect to the Underlying Price 
         """  
         try:
             S = argv[0]
@@ -648,7 +649,9 @@ class BlackScholesCall(BlackScholes):
 
     def gamma(self, *argv) -> float:
         """
-        Call gamma (equivalent to the Put gamma)
+        Call Gamma (equivalent to the Put gamma)
+        First derivative of the Delta with respect to the Underlying Price, i.e., 
+        second derivative of the Price with respect to the Underlying Price 
         """  
         try:
             S = argv[0]
@@ -668,6 +671,7 @@ class BlackScholesCall(BlackScholes):
     def theta(self, *argv) -> float:
         """
         Call Theta
+        First Derivative of the Price with respect to the Years-to-Maturity
         """
         try:
             S = argv[0]
@@ -691,7 +695,7 @@ class BlackScholesCall(BlackScholes):
 
     def vega(self, *argv) -> float:
         """
-        Call vega (equivalent to Put vega):
+        Call Vega (equivalent to Put vega):
         First Derivative of the Price with respect to the (Implied) Volatility
         """    
         try:
@@ -726,6 +730,198 @@ class BlackScholesCall(BlackScholes):
                 * self.T 
                 * np.exp(-self.r * self.T) 
                 * self._Ncdf(self._d2(S)) 
+            )
+        else:
+            # The Option has expired
+            return 0
+
+
+class BlackScholesPut(BlackScholes):
+    """
+    Black-Scholes Model for Put Options
+    """
+    def __init__(
+        self, 
+        S: float, 
+        K: float, 
+        T: float, 
+        r: float, 
+        v: float, 
+        q: float = 0
+    ):
+        super().__init__(S=S, K=K, T=T, r=r, v=v, q=q)
+
+    @property
+    def params(self) -> dict:
+        """
+        Returns all input option parameters
+        """
+        dic = {
+            "type": "P",
+            "style": "European",
+            "model": "Black-Scholes",
+            "S": self.S, 
+            "K": self.K, 
+            "T": self.T,
+            "r": self.r,
+            "v": self.v,
+            "q": self.q
+        }
+        return DotDict(dic)
+    
+    def greeks(
+        self,
+        grk: str | None = None
+        # rnd: int = 2
+    ) -> dict:
+        """
+        Call greeks
+        """
+        if grk == "Price":
+            return self.price()
+        elif grk == "Delta":
+            return self.delta()
+        elif grk == "Gamma":
+            return self.gamma()
+        elif grk == "Vega":
+            return self.vega()
+        elif grk == "Theta":
+            return self.theta()
+        elif grk == "Rho":
+            return self.rho()
+        elif grk is None:
+            return {
+                "Price": self.price(),
+                "Delta": self.delta(),
+                "Gamma": self.gamma(),
+                "Theta": self.theta(),
+                "Vega": self.vega(),
+                "Rho": self.rho()
+            }
+        else:
+            raise ValueError("Wrong input greek name")
+    
+    def price(self, *argv) -> float:
+        """
+        Put Price
+        """
+        try:
+            S = argv[0]
+        except:
+            S = self.S
+        if self.T > 0:
+            # The Option has not expired yet
+            return (
+                - S 
+                * np.exp(-self.q * self.T) 
+                * self._Ncdf(-self._d1(S))
+                + self.K 
+                * np.exp(-self.r * self.T) 
+                * self._Ncdf(-self._d2(S))
+            )
+        else:
+            # The Option has expired
+            return max(self.K - S, 0)
+    
+    def delta(self, *argv) -> float:
+        """
+        Put Delta
+        First derivative of the Price with respect to the Underlying Price 
+        """  
+        try:
+            S = argv[0]
+        except:
+            S = self.S 
+        if self.T > 0:
+            # The Option has not expired yet
+            return np.exp(-self.q * self.T) * self._Ncdf(self._d1(S)) - 1
+        else:
+            # The Option has expired
+            return -1 if self.price(S) > 0 else 0
+        
+    def gamma(self, *argv) -> float:
+        """
+        Put Gamma (equivalent to the Call Gamma)
+        First derivative of the Delta with respect to the Underlying Price, i.e., 
+        second derivative of the Price with respect to the Underlying Price 
+        """  
+        try:
+            S = argv[0]
+        except:
+            S = self.S
+        if self.T > 0:
+            # The Option has not expired yet
+            return (
+                + np.exp(-self.q * self.T) 
+                * self._Npdf(self._d1(S))
+                / (S * self.v * np.sqrt(self.T))
+            )
+        else:
+            # The Option has expired
+            return 0
+    
+    def theta(self, *argv) -> float:
+        """
+        Put Theta
+        First Derivative of the Price with respect to the Years-to-Maturity
+        """
+        try:
+            S = argv[0]
+        except:
+            S = self.S
+        # Call Option
+        if self.T > 0:
+            # The Option has not expired yet
+            return (
+                - np.exp(-self.q * self.T) 
+                * self.S 
+                * self.v 
+                * self._Npdf(self._d1(S)) 
+                / (2 * np.sqrt(self.T))
+                - self.q * np.exp(-self.q * self.T) * self.S * self._Ncdf(-self._d1(S))
+                + self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(-self._d2(S))
+            )        
+        else:
+            # The Option has expired
+            return 0
+    
+    def vega(self, *argv) -> float:
+        """
+        Put Vega (equivalent to Call vega):
+        First Derivative of the Price with respect to the (Implied) Volatility
+        """    
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
+        if self.T > 0:
+            # The Option has not expired yet
+            return (
+                + np.exp(-self.q * self.T) 
+                * self.S 
+                * np.sqrt(self.T)
+                * self._Npdf(self._d1(S)) 
+            )
+        else:
+            # The Option has expired
+            return 0
+
+    def rho(self, *argv) -> float:
+        """
+        Put Rho:
+        First Derivative of the Price with respect to the Interest Rate
+        """    
+        try:
+            S = argv[0]
+        except:
+            S = self.S  
+        if self.T > 0:
+            # The Option has not expired yet
+            return (
+                - self.K 
+                * self.T 
+                * np.exp(-self.r * self.T) 
+                * self._Ncdf(-self._d2(S)) 
             )
         else:
             # The Option has expired
