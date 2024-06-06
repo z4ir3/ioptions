@@ -1,10 +1,14 @@
 """
+Copyright (c) leonardo-rocchi:z4ir3
 """
 import streamlit as st
+
+# Importing absolute path for deployment as streamlit app
+import sys
+sys.path.insert(1,"/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/streamlit_option_menu")
 from streamlit_option_menu import option_menu 
 
-# from src.home import dbpage_home
-from src.greeks import dbpage_greeks
+from src.pricing import dbpage_pricing
 from src.strategies import dbpage_strategies
 
 
@@ -43,7 +47,7 @@ def main():
             menu_icon = "bar-chart",
             options=[
                 # "Home",
-                "Option Greeks",
+                "Option Pricing",
                 "Option Strategies"
             ],
             icons = [
@@ -73,8 +77,8 @@ def main():
         # """
         # st.markdown(ss, unsafe_allow_html=True)
 
-    if PageSelected == "Option Greeks":
-        _ = dbpage_greeks()
+    if PageSelected == "Option Pricing":
+        _ = dbpage_pricing()
     else:
         _ = dbpage_strategies()
 
@@ -86,8 +90,6 @@ def main():
         ''',
         unsafe_allow_html = True
     )
-
-
 
 
 if __name__ == "__main__":
