@@ -11,7 +11,8 @@ import plotly.graph_objs as go
 
 from src.utils import strategynames
 # from src.utils import get_Smax, get_Smin, bscolors
-from models.optionstrategy import BSOptStrat
+
+# from models.optionstrategy import BSOptStrat
 
 
 def dbpage_strategies():

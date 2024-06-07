@@ -1,5 +1,5 @@
 """
-Copyright (c) leonardo-rocchi:z4ir3
+src.pricing.py
 """
 import streamlit as st
 
@@ -13,7 +13,6 @@ pio.renderers.default = "browser"
 import plotly.graph_objs as go 
 
 from src.utils import get_Smax, get_Smin, bscolors
-# from models.blackscholes import BSOption
 
 from models.blackscholes import BlackScholesCall, BlackScholesPut
 
