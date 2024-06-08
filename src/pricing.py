@@ -15,6 +15,7 @@ import plotly.graph_objs as go
 from src.utils import get_Smax, get_Smin, bscolors
 
 from models.blackscholes import BlackScholesCall, BlackScholesPut
+from models.black import BlackCall, BlackPut
 
 
 def dbpage_pricing(
@@ -174,10 +175,19 @@ def dbpage_pricing(
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
-        if CP == "C":
-            Options = [BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
-        else:
-            Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+        if (ostyle == "European") and (underlying_type == "Stock"):
+            if CP == "C":
+                Options = [BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+            else:
+                Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+        elif (ostyle == "European") and (underlying_type == "Index"):
+            if CP == "C":
+                Options = [BlackCall(S=s, K=K, T=T, r=r, v=v) for s in uset]
+            else:
+                Options = [BlackPut(S=s, K=K, T=T, r=r, v=v) for s in uset]
+
+
+            
 
         Sens = dict()
         for s in sensname: 
