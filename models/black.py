@@ -261,7 +261,7 @@ class BlackCall(Black):
                 / (2 * np.sqrt(self.T)) 
                 + self.r * np.exp(-self.r * self.T) * self.S * self._Ncdf(self._d1(S))
                 - self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(self._d2(S))
-            )
+            ) * 1/365
         else:
             # The Option has expired
             return 0
@@ -282,7 +282,7 @@ class BlackCall(Black):
                 * self.S 
                 * np.sqrt(self.T)
                 * self._Npdf(self._d1(S)) 
-            )
+            ) * 1/100
         else:
             # The Option has expired
             return 0
@@ -305,7 +305,7 @@ class BlackCall(Black):
                 + self.T 
                 * np.exp(-self.r * self.T)
                 * self.K * self._Ncdf(self._d2(S))
-            )
+            ) * 1/100
         else:
             # The Option has expired
             return 0
@@ -453,7 +453,7 @@ class BlackPut(Black):
                 / (2 * np.sqrt(self.T))
                 + self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(-self._d2(S))
                 - self.r * np.exp(-self.r * self.T) * self.S * self._Ncdf(-self._d1(S))
-            )        
+            ) * 1/365   
         else:
             # The Option has expired
             return 0
@@ -474,7 +474,7 @@ class BlackPut(Black):
                 * self.S 
                 * np.sqrt(self.T)
                 * self._Npdf(self._d1(S)) 
-            )
+            ) * 1/100
         else:
             # The Option has expired
             return 0
@@ -499,7 +499,7 @@ class BlackPut(Black):
                 * np.exp(-self.r * self.T) 
                 * self.S
                 * self._Ncdf(-self._d1(S)) 
-            )
+            ) * 1/100
         else:
             # The Option has expired
             return 0
