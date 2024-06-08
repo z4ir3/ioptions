@@ -19,7 +19,7 @@ from models.black import BlackCall, BlackPut
 
 
 def dbpage_pricing(
-    nss: int = 80,
+    nss: int = 200,
     sensname: list = ["Price","Delta","Gamma","Vega","Theta","Rho"],#,"Lambda"],
     rnd: int = 6
 ) -> None:
@@ -48,12 +48,15 @@ def dbpage_pricing(
     with st.sidebar:
         # Main options data
 
+        st.write(" ")
+        st.write("Main option data:")
+
         col1, col2 = st.columns([1,1])
         with col1:
             ostyle = st.selectbox(
                 label = "Option style",
                 options = ["European","American"],
-                index = None,
+                index = 0,
                 placeholder = "European or American",
                 key = "option-style"
             )
@@ -63,7 +66,7 @@ def dbpage_pricing(
             underlying_type = st.selectbox(
                 label = "Underlying type",
                 options = ["Stock","Index"],
-                index = None,
+                index = 0,
                 placeholder = "Stock or Index Index" if ostyle == "European" else "Stock",
                 disabled = isdisabled,
                 key = "underlying-style"
@@ -76,7 +79,7 @@ def dbpage_pricing(
             cp = st.selectbox(
                 label = "Option type",
                 options = ["Call","Put"],
-                index = None,
+                index = 0,
                 placeholder = "Call or Put",
                 key = "option-type"
             )
@@ -88,7 +91,7 @@ def dbpage_pricing(
                 label = "Option strike ($K$)",
                 min_value = 0.1,
                 format = "%f", 
-                value = None, #100.0,
+                value = 10.0, #100.0,
                 placeholder = "Enter Strike price",
                 help = "'Exercise' price of the option",
                 key = "strike"
@@ -115,13 +118,15 @@ def dbpage_pricing(
 
         # Print of the model pricing used 
         if ostyle == "European" and underlying_type == "Stock":
-            st.subheader("Black-Scholes model")
+            st.subheader("Pricing model: Black-Scholes")
         elif underlying_type == "Index":
-            st.subheader("Black model")
+            st.subheader("Pricing model: Black '76")
         elif ostyle == "American":
-            st.subheader("Binomial-Tree Model (Cox-Ross-Rubinstein)")
+            st.subheader("Pricing model: Binomial-Tree Model (Cox-Ross-Rubinstein)")
             st.write("...to be implemented yet")
             return 0
+        
+        st.write(" ")
 
         # Rest of widgets: expiration, volatility, and interest rate
         col1, col2, col3, col4 = st.columns([0.5,1,1,0.5], gap="small") 
@@ -135,14 +140,16 @@ def dbpage_pricing(
             ) 
         with col2:
             # Expiration Slider 
+            days_per_year = 365
+            n_exp_years = 1
             T = st.slider(
                 label = "Years to Expiration ($\\tau$)" if TType == "Years" else "Days to Expiration ($\\tau$)",
                 min_value = 0 if TType == "Days" else 0.0, 
-                max_value = 1095 if TType == "Days" else float(3), 
-                value = 182 if TType == "Days" else 0.50, 
+                max_value = n_exp_years * days_per_year if TType == "Days" else float(n_exp_years), 
+                value = 30 if TType == "Days" else n_exp_years / 2, 
                 step = 1 if TType == "Days" else 0.10, 
                 key = "slider-exp", 
-                help = None
+                help = None  #TODO decir que tienen que ser "natural day" 
             )
             if TType == "Days": 
                 T = T / 365
@@ -166,12 +173,26 @@ def dbpage_pricing(
                 min_value = 0.0,
                 max_value = 5.0,
                 value = 1.0, 
+                step = 0.1,
                 key = "slider-irate", 
                 help = "Risk-free rate"
             )
             r = r / 100
 
         # Main calculations 
+
+
+
+        # from models.normaldist import Normal
+        # N = Normal()
+        # st.write( N.pdf(1.2) )
+        # st.write( N.cdf(1.2) )
+
+        # st.write( Normal.pdf(1.2) )
+        # st.write( Normal.cdf(1.2) )
+
+
+        # st.divider()
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
@@ -185,9 +206,6 @@ def dbpage_pricing(
                 Options = [BlackCall(S=s, K=K, T=T, r=r, v=v) for s in uset]
             else:
                 Options = [BlackPut(S=s, K=K, T=T, r=r, v=v) for s in uset]
-
-
-            
 
         Sens = dict()
         for s in sensname: 
@@ -207,7 +225,7 @@ def dbpage_pricing(
                 with atms[idx]:
                     st.metric(
                         label = f"ATM {s}",
-                        value = f"{ATM[s]['y'][0]:.2f}",
+                        value = f"{ATM[s]['y'][0]:.3f}",
                         help = None
                     )
 
