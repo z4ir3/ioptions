@@ -5,6 +5,7 @@ Black '76 option pricing model - (European) Index Options
 import pandas as pd
 import numpy as np
 
+from models.normaldist import Normal
 from models.utils import DotDict
 
 class Black:
@@ -83,28 +84,40 @@ class Black:
         else:
             raise ValueError(f"The Implied Volatility must be greater than 0 (got{v})")
 
-    @staticmethod
-    def _Npdf(x: float) -> float:
-        """
-        Standard Normal PDF evaluated at the input point x
-        """  
-        return 1 / (np.sqrt(2*np.pi)) * np.exp(-0.5 * x**2) 
+    # Original: Npdf and Ncdf inside
+    # @staticmethod
+    # def _Npdf(x: float) -> float:
+    #     """
+    #     Standard Normal PDF evaluated at the input point x
+    #     """  
+    #     return 1 / (np.sqrt(2*np.pi)) * np.exp(-0.5 * x**2) 
 
-    def _Ncdf(
-        self, 
-        x: float,
-        a: float = +0.4361836,
-        b: float = -0.1201676,
-        c: float = +0.9372980,
-    ) -> float:
-        """
-        Standard Normal CDF evaluated at the input point x.
-        Computed with 3rd degree polynomial approximation 
-        precise up to the 5th decimal point (Abramowitz and Stegun)
-        """
-        vk = 1 / (1 + 0.33267 * np.abs(x))
-        pdf = self._Npdf(x) * (a * vk + b * vk**2 + c * vk**3) 
-        return pdf if x <= 0 else 1-pdf
+    # def _Ncdf(
+    #     self, 
+    #     x: float,
+    #     a: float = +0.4361836,
+    #     b: float = -0.1201676,
+    #     c: float = +0.9372980,
+    # ) -> float:
+    #     """
+    #     Standard Normal CDF evaluated at the input point x.
+    #     Computed with 3rd degree polynomial approximation 
+    #     precise up to the 5th decimal point (Abramowitz and Stegun)
+    #     """
+    #     vk = 1 / (1 + 0.33267 * np.abs(x))
+    #     pdf = self._Npdf(x) * (a * vk + b * vk**2 + c * vk**3) 
+    #     return pdf if x <= 0 else 1-pdf
+    
+    # New: Npdf and Ncdf imported
+    @staticmethod
+    def _Npdf(x: float):
+        N = Normal()
+        return N.pdf(x)
+    
+    @staticmethod
+    def _Ncdf(x: float):
+        N = Normal()
+        return N.cdf(x)
 
     def _d1(self, S: float) -> float:
         """
