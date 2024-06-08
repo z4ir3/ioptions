@@ -1,6 +1,6 @@
 """
 models.blackscholes.py
-Black-Scholes option pricing class
+Black-Scholes option pricing model - European Stock Options
 """
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ from models.utils import DotDict
 
 class BlackScholes:
     """
-    Black-Scholes Option Pricing Model
+    Black-Scholes Option Pricing Model for European Stock Options
     """
     def __init__(
         self, 
@@ -26,7 +26,7 @@ class BlackScholes:
         r: risk-free interest rate
         T: years-to-maturity (YTM) 
         v: implied volatility
-        q: anual dividend yield
+        q: annual dividend yield
         """
         self.S = BlackScholes._valid_underlying(S)    
         self.K = BlackScholes._valid_strike(K)
@@ -120,7 +120,7 @@ class BlackScholes:
 
     def _d1(self, S: float) -> float:
         """
-        Compute the quantity "d1" of Black-Scholes option pricing
+        Compute the quantity "d1" of Black-Scholes option pricing model
         """
         return ( 
             (np.log(S/self.K) + (self.r - self.q + 0.5 * self.v**2) * self.T) 
@@ -129,7 +129,7 @@ class BlackScholes:
         
     def _d2(self, S: float) -> float:
         """
-        Compute the quantity "d2" of Black-Scholes option pricing
+        Compute the quantity "d2" of Black-Scholes option pricing model
         """
         return self._d1(S) - self.v * np.sqrt(self.T)
     
