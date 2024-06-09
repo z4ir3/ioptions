@@ -213,6 +213,45 @@ def dbpage_pricing(
             grk = [o.greeks(grk=s) for o in Options]
             Sens[s] = pd.Series(grk, index=uset, name=s)
 
+
+        total_tabs = ["The Model"] + sensname + ["All Sensitivities"]
+        tabs = st.tabs(total_tabs)
+        for idx, s in enumerate(total_tabs):
+            match s:
+                case "The Model":
+                    if ostyle == "European" and underlying_type == "Stock":
+                        desc = "Black-Scholes pricing model"
+                    elif underlying_type == "Index":
+                        desc = "Black '76 pricing model"
+                    elif ostyle == "American":
+                        desc = "Binomial-Tree Model (Cox-Ross-Rubinstein) pricing model"
+                case "Price":
+                    desc = ""
+                case "Delta":
+                    desc = "First derivative of the Price with respect to the Underlying Price"
+                case "Gamma":
+                    desc = "First derivative of the Price with respect to the Option's Delta"
+                case "Vega":
+                    desc = "First derivative of the Price with respect to the Implied Volatility"
+                case "Theta":
+                    desc = "First derivative of the Price with respect to the timme to maturity"
+                case "Rho":
+                    desc = "First derivative of the Price with respect to the interest rate"
+                case "All Sensitivities":
+                    desc = "" 
+            with tabs[idx]:
+                if s == "The Model":
+                    st.subheader(desc)
+                elif s != "All Sensitivities":
+                    st.subheader(s)
+                    st.write(desc)
+
+
+
+
+
+
+
         # Save ATM points for metric and to be passed in plot functions
         ATM = {k: dict() for k in sensname}
         with st.container():
@@ -336,7 +375,6 @@ def _plotgreeks(
             hoverinfo = "none"
         )
     )
-
     # Adding option data trace
     fig.add_trace(
         go.Scatter(
@@ -351,13 +389,11 @@ def _plotgreeks(
             showlegend = False, 
         )
     )
-
     # Label x-axis
     if xlab:
         xlabel = f"Underlying S (K={K})"
     else:
         xlabel = None
-
     # legend position
     if (CP == "P") and (data.name in ["Price","Lambda"]):
         legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
@@ -367,7 +403,6 @@ def _plotgreeks(
         legpos = dict(yanchor = "bottom", y = 0.01, xanchor = "left", x = 0.01)
     else: 
         legpos = dict(yanchor = "top", y = 0.99, xanchor = "left", x = 0.01)
-
     # Update layout
     fig.update_layout(
         # title = {"text": "", "font_size": 22},
@@ -413,6 +448,5 @@ def _plotgreeks(
             ),
             showlegend = True #True
         )
-    )
-    
+    )    
     return fig
