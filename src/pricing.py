@@ -156,7 +156,7 @@ def dbpage_pricing(
         with col3:
             # Volatilty Slider 
             v = st.slider(
-                label =  "Volatility (%) ($\sigma$)", 
+                label =  "Volatility (%) ($\\sigma$)", 
                 min_value = 1.0,
                 max_value = 99.0,
                 value = 30.0, 
