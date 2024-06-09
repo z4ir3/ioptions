@@ -214,40 +214,338 @@ def dbpage_pricing(
             grk = [o.greeks(grk=s) for o in Options]
             Sens[s] = pd.Series(grk, index=uset, name=s)
 
+        st.markdown('''
+        <style>
+        .katex-html {
+            text-align: left;
+            /*font-family: monospace;*/
+        }
+        </style>''',
+        unsafe_allow_html=True
+        )
 
-        total_tabs = ["The Model"] + sensname + ["All Sensitivities"]
+        # total_tabs = ["The Model"] + sensname + ["All Sensitivities"]
+        total_tabs = sensname + ["All Sensitivities"]
         tabs = st.tabs(total_tabs)
+        cols_size = [7,1]
+        for idx, s in enumerate(total_tabs):
+            if s == "Price":
+                with tabs[idx]:
+                    st.subheader(f"{cp} " + s)
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            C = Se^{-qt}\Phi(d_1) - Ke^{-rt}\Phi(d_2)
+                            \quad\text{where}\quad
+                            d_1 = \frac{\ln(S/K)+(r-q-\sigma^2/2)t}{\sigma\sqrt{t}}
+                            \quad\text{and}\quad
+                            d_2 = d_1 - \sigma\sqrt{t}
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            P = -Se^{-qt}\Phi(-d_1) + Ke^{-rt}\Phi(-d_2)
+                            \quad\text{where}\quad
+                            d_1 = \frac{\ln(S/K)+(r-q-\sigma^2/2)t}{\sigma\sqrt{t}}
+                            \quad\text{and}\quad
+                            d_2 = d_1 - \sigma\sqrt{t}
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            C = e^{-rt}\left(S\Phi(d_1) - K\Phi(d_2)\right)
+                            \quad\text{where}\quad
+                            d_1 = \frac{\ln(S/K)+ (\sigma^2/2)t}{\sigma\sqrt{t}}
+                            \quad\text{and}\quad
+                            d_2 = d_1 - \sigma\sqrt{t}
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r''' 
+                            P = e^{-rt}\left(-S\Phi(-d_1) + K\Phi(-d_2)\right)
+                            \quad\text{where}\quad
+                            d_1 = \frac{\ln(S/K)+ (\sigma^2/2)t}{\sigma\sqrt{t}}
+                            \quad\text{and}\quad
+                            d_2 = d_1 - \sigma\sqrt{t}
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+            elif s == "Delta":
+                with tabs[idx]:
+                    st.subheader(f"First derivative of the {cp}'s price with respect to the Underlying Price")
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            \Delta = \frac{\partial C}{\partial S} = e^{-qt}\Phi(d_1)
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            \Delta = \frac{\partial P}{\partial S} = -e^{-qt}\Phi(-d_1)
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            \Delta = \frac{\partial C}{\partial S} = e^{-rt}\Phi(d_1)
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r'''
+                            \Delta = \frac{\partial P}{\partial S} = -e^{-rt}\Phi(-d_1)
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+            elif s == "Gamma":
+                with tabs[idx]:
+                    st.subheader(f"Second derivative of the {cp}'s price with respect to the Underlying Price")
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            \Gamma 
+                            = \frac{\partial^2 C}{\partial S^2} 
+                            = \frac{\partial \Delta}{\partial S} 
+                            = \frac{1}{2\sigma\sqrt{t}}e^{-qt}\phi(d_1)
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            \Gamma 
+                            = \frac{\partial^2 P}{\partial S^2} 
+                            = \frac{\partial \Delta}{\partial S} 
+                            = \frac{1}{2\sigma\sqrt{t}}e^{-qt}\phi(d_1)
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            \Gamma 
+                            = \frac{\partial^2 C}{\partial S^2} 
+                            = \frac{\partial \Delta}{\partial S} 
+                            = \frac{1}{2\sigma\sqrt{t}}e^{-rt}\phi(d_1)
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r'''
+                            \Gamma 
+                            = \frac{\partial^2 P}{\partial S^2} 
+                            = \frac{\partial \Delta}{\partial S} 
+                            = \frac{1}{2\sigma\sqrt{t}}e^{-rt}\phi(d_1)
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+            elif s == "Vega":
+                with tabs[idx]:
+                    st.subheader(f"First derivative of the {cp}'s price with respect to the implied volatility")
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            \kappa = \frac{\partial C}{\partial \sigma} = S e^{-qt} \phi(d_1) \sqrt{t}
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            \kappa = \frac{\partial P}{\partial \sigma} = S e^{-qt} \phi(d_1) \sqrt{t}
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            \kappa = \frac{\partial C}{\partial \sigma} = S e^{-rt} \phi(d_1) \sqrt{t}
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r'''
+                             \kappa = \frac{\partial P}{\partial \sigma} = S e^{-rt} \phi(d_1) \sqrt{t}
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+            elif s == "Theta":
+                with tabs[idx]:
+                    st.subheader(f"First derivative of the {cp}'s price with respect to the time to maturity")
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            \theta 
+                            = \frac{\partial C}{\partial t} 
+                            = -\frac{\sigma S e^{-qt}}{2\sqrt{t}}\phi(d_1) 
+                            + q S e^{-qt}\Phi(d_1)
+                            - r K e^{-rt}\Phi(d_2)
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            \theta 
+                            = \frac{\partial P}{\partial t} 
+                            = -\frac{\sigma S e^{-qt}}{2\sqrt{t}}\phi(d_1) 
+                            - q S e^{-qt}\Phi(-d_1)
+                            + r K e^{-rt}\Phi(-d_2)
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            \theta 
+                            = \frac{\partial C}{\partial t} 
+                            = -\frac{\sigma S e^{-rt}}{2\sqrt{t}}\phi(d_1) 
+                            + r S e^{-rt}\Phi(d_1)
+                            - r K e^{-rt}\Phi(d_2)
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r'''
+                            \theta 
+                            = \frac{\partial P}{\partial t} 
+                            = -\frac{\sigma S e^{-rt}}{2\sqrt{t}}\phi(d_1) 
+                            - r S e^{-rt}\Phi(-d_1)
+                            + r K e^{-rt}\Phi(-d_2)
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+            elif s == "Rho":
+                with tabs[idx]:
+                    st.subheader(f"First derivative of the {cp}'s price with respect to the interest rate")
+                    col1, col2 = st.columns(cols_size)
+                    with col1:
+                        if (underlying_type == "Stock") and (cp == "Call"):
+                            # Black-Scholes Call
+                            desc = r'''
+                            \rho = \frac{\partial C}{\partial r} = K t e^{-rt} \Phi(d_2) 
+                            '''
+                        elif (underlying_type == "Stock") and (cp == "Put"):
+                            # Black-Scholes Put
+                            desc = r'''
+                            \rho = \frac{\partial P}{\partial r} = -K t e^{-rt} \Phi(-d_2) 
+                            '''
+                        elif (underlying_type == "Index") and (cp == "Call"):
+                            # Black '76 Call
+                            desc = r'''
+                            \rho = \frac{\partial C}{\partial r} 
+                            = -t e^{-rt} \left(S\Phi(d_1) - K \Phi(d_2)\right) 
+                            '''
+                        else:
+                            # Black '76 Put 
+                            desc = r'''
+                            \rho = \frac{\partial P}{\partial r} 
+                            = -t e^{-rt} \left(-S\Phi(-d_1) + K\Phi(-d_2)\right) 
+                            '''
+                        st.latex(desc)
+                    with col2:
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+
+
+
+
+
+
+
+
+        """
         for idx, s in enumerate(total_tabs):
             match s:
-                case "The Model":
-                    if ostyle == "European" and underlying_type == "Stock":
-                        desc = "Black-Scholes pricing model"
-                    elif underlying_type == "Index":
-                        desc = "Black '76 pricing model"
-                    elif ostyle == "American":
-                        desc = "Binomial-Tree Model (Cox-Ross-Rubinstein) pricing model"
+                # case "The Model":
+                #     if ostyle == "European" and underlying_type == "Stock":
+                #         desc = r'''Black-Scholes pricing model C = Se^{-qt}'''
+                #     elif underlying_type == "Index":
+                #         desc = "Black '76 pricing model"
+                #     elif ostyle == "American":
+                #         desc = "Binomial-Tree Model (Cox-Ross-Rubinstein) pricing model"
                 case "Price":
-                    desc = ""
+                    desc = r'''
+                    C = Se^{-qt}\Phi(d_1) - Ke^{-rt}\Phi(d_2)
+                    \quad\text{where}\quad
+                    d_1 = \frac{\ln(S/K)+(r-q-\sigma^2/2)t}{\sigma\sqrt{t}}
+                    \quad\text{and}\quad
+                    d_2 = d_1 - \sigma\sqrt{t}
+                    '''
                 case "Delta":
-                    desc = "First derivative of the Price with respect to the Underlying Price"
+                    desc = r'''
+                    \text{First derivative of the price with respect to the Underlying Price:}
+                    \;\,
+                    \Delta = \frac{\partial C}{\partial S} = e^{-qt}\Phi(d_1)
+                    '''
                 case "Gamma":
-                    desc = "First derivative of the Price with respect to the Option's Delta"
+                    desc = r'''
+                    \text{Second derivative of the price with respect to the Underlying Price:}
+                    \;\,
+                    \Gamma = \frac{\partial^2 C}{\partial S^2} = \frac{e^{-qt}\phi(d_1)}{2\sigma\sqrt{t}}
+                    '''
                 case "Vega":
-                    desc = "First derivative of the Price with respect to the Implied Volatility"
+                    desc = r'''
+                    \text{First derivative of the price with respect to the Implied Volatility:}
+                    \;\,
+                    \kappa = \frac{\partial C}{\partial \sigma} = S e^{-qt} \phi(d_1) \sqrt{t}
+                    '''
                 case "Theta":
-                    desc = "First derivative of the Price with respect to the timme to maturity"
+                    desc = r'''
+                    \text{First derivative of the price with respect to the time to maturity:}
+                    \;\,
+                    \theta = \frac{\partial C}{\partial t} 
+                    = -\frac{S\sigma e^{-qt}}{2\sqrt{t}}\phi(d_1) 
+                    - r K e^{-rt}\Phi(d_2)
+                    + q S e^{-qt}\Phi(d_1)
+                    '''                
                 case "Rho":
-                    desc = "First derivative of the Price with respect to the interest rate"
+                    desc = r'''
+                    \rho = \frac{\partial C}{\partial r} = K t e^{-rt} \Phi(d_2)
+                    '''  
                 case "All Sensitivities":
                     desc = "" 
             with tabs[idx]:
-                if s == "The Model":
-                    st.subheader(desc)
-                elif s != "All Sensitivities":
-                    st.subheader(s)
-                    st.write(desc)
-
-
+                # if s == "The Model":
+                #     st.subheader(desc)
+                #     st.latex(desc)
+                if s != "All Sensitivities":
+                    col1, col2 = st.columns([6,1])
+                    with col1:
+                        # st.subheader(f"{cp} " + s)
+                        st.subheader("First derivative of the price with respect to the interest rate")
+                        st.latex(desc)
+                        # if s == "Delta":
+                        #     st.
+                    with col2:
+                        st.subheader("")
+                        st.metric(
+                            label = f"ATM {s}",
+                            value = 222,
+                            help = None
+                        )
+        """
 
 
 
