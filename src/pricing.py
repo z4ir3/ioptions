@@ -117,28 +117,33 @@ def dbpage_pricing(
     if (cd1 and cd2 and cd3 and cd4):
 
         # Print of the model pricing used 
-        if ostyle == "European" and underlying_type == "Stock":
-            st.subheader("Pricing model: Black-Scholes")
-        elif underlying_type == "Index":
-            st.subheader("Pricing model: Black '76")
-        elif ostyle == "American":
-            st.subheader("Pricing model: Binomial-Tree Model (Cox-Ross-Rubinstein)")
-            st.write("...to be implemented yet")
-            return 0
+        with st.sidebar:
+            st.divider()
+            col1, col2 = st.columns([1,1])
+            with col1:
+                st.header("Pricing Model:")
+            with col2:
+                if ostyle == "European" and underlying_type == "Stock":
+                    st.success("**Black-Scholes**")
+                elif underlying_type == "Index":
+                    st.success("**Black '76**")
+                elif ostyle == "American":
+                    st.header("Binomial-Tree") # (Cox-Ross-Rubinstein)")
+                    st.write("...to be implemented yet")
+                    return 0
         
-        st.write(" ")
-
         # Rest of widgets: expiration, volatility, and interest rate
-        col1, col2, col3, col4 = st.columns([0.5,1,1,0.5], gap="small") 
+        col1, col2, col3, col4, col5 = st.columns([1.25,0.625,0.5,0.5,0.25], gap="small") 
+        # with col1:
+        #     pass
+        #     # # Expiration type
+        #     # TType = st.selectbox(
+        #     #     label = "Expiration type",
+        #     #     options = ["Days","Years"],
+        #     #     index = 0,
+        #     #     key = "dte-type"
+        #     # ) 
         with col1:
-            # Expiration type
-            TType = st.selectbox(
-                label = "Expiration type",
-                options = ["Days","Years"],
-                index = 0,
-                key = "dte-type"
-            ) 
-        with col2:
             # Expiration Slider 
             days_per_year = 365
             n_exp_years = 1
@@ -167,7 +172,7 @@ def dbpage_pricing(
                 help = "Implied Volatility", 
             )
             v = v / 100
-        with col4:
+        with col3:
             # Interes Rate Slider 
             r = st.slider(
                 label = "Interest Rate (%) ($r$)", 
@@ -179,6 +184,34 @@ def dbpage_pricing(
                 help = "Risk-free rate"
             )
             r = r / 100
+        with col4:
+            atmprice = st.selectbox(
+                label = "Moneyness",
+                options = ["ATM","ITM","OTM"], #"Custom Underlying"],
+                index = 0,
+                # help = "Enter a custom Underlying or let $S = K$ (ATM Option)"
+            )
+        # if atmprice is not None:
+        with col5:
+            if atmprice == "ITM" and cp == "Call":
+                helpmsg = "Enter a price $S > K$"
+            elif atmprice == "OTM" and cp == "Call":
+                helpmsg = "Enter a price $S < K$"
+            elif atmprice == "ITM" and cp == "Put":
+                helpmsg = "Enter a price $S < K$"
+            elif atmprice == "OTM" and cp == "Put":
+                helpmsg = "Enter a price $S > K$"
+            else:
+                helpmsg = None
+            SS = st.number_input(
+                label = "Enter $S$",
+                min_value = 0.0,
+                max_value = None,
+                format = "%f",
+                value = K, #if atmprice == "ATM" else None,
+                help = helpmsg,
+                disabled = True if atmprice == "ATM" else False
+            )
 
         # Main calculations 
 
