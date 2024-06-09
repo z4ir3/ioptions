@@ -272,8 +272,8 @@ class BlackCall(Black):
                 * self.v 
                 * self._Npdf(self._d1(S)) 
                 / (2 * np.sqrt(self.T)) 
-                + self.r * np.exp(-self.r * self.T) * self.S * self._Ncdf(self._d1(S))
-                - self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(self._d2(S))
+                + self.r * self.S * np.exp(-self.r * self.T) * self._Ncdf(self._d1(S))
+                - self.r * self.K * np.exp(-self.r * self.T) * self._Ncdf(self._d2(S))
             ) * 1/365
         else:
             # The Option has expired
@@ -464,8 +464,8 @@ class BlackPut(Black):
                 * self.v 
                 * self._Npdf(self._d1(S)) 
                 / (2 * np.sqrt(self.T))
-                + self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(-self._d2(S))
-                - self.r * np.exp(-self.r * self.T) * self.S * self._Ncdf(-self._d1(S))
+                - self.r * self.S * np.exp(-self.r * self.T) * self._Ncdf(-self._d1(S))
+                + self.r * self.K * np.exp(-self.r * self.T) * self._Ncdf(-self._d2(S))
             ) * 1/365   
         else:
             # The Option has expired

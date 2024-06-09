@@ -289,8 +289,8 @@ class BlackScholesCall(BlackScholes):
                 * self.v 
                 * self._Npdf(self._d1(S)) 
                 / (2 * np.sqrt(self.T)) 
-                + self.q * np.exp(-self.q * self.T) * self.S * self._Ncdf(self._d1(S))
-                - self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(self._d2(S))
+                + self.q * self.S * np.exp(-self.q * self.T) * self._Ncdf(self._d1(S))
+                - self.r * self.K * np.exp(-self.r * self.T) * self._Ncdf(self._d2(S))
             ) * 1/365
         else:
             # The Option has expired
@@ -437,7 +437,7 @@ class BlackScholesPut(BlackScholes):
             S = self.S 
         if self.T > 0:
             # The Option has not expired yet
-            return np.exp(-self.q * self.T) * self._Ncdf(self._d1(S)) - 1
+            return -np.exp(-self.q * self.T) * self._Ncdf(-self._d1(S))
         else:
             # The Option has expired
             return -1 if self.price(S) > 0 else 0
@@ -481,8 +481,8 @@ class BlackScholesPut(BlackScholes):
                 * self.v 
                 * self._Npdf(self._d1(S)) 
                 / (2 * np.sqrt(self.T))
-                - self.q * np.exp(-self.q * self.T) * self.S * self._Ncdf(-self._d1(S))
-                + self.r * np.exp(-self.r * self.T) * self.K * self._Ncdf(-self._d2(S))
+                - self.q * self.S * np.exp(-self.q * self.T) * self._Ncdf(-self._d1(S))
+                + self.r * self.K * np.exp(-self.r * self.T) * self._Ncdf(-self._d2(S))
             ) * 1/365    
         else:
             # The Option has expired
