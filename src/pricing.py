@@ -143,17 +143,18 @@ def dbpage_pricing(
             days_per_year = 365
             n_exp_years = 1
             T = st.slider(
-                label = "Years to Expiration ($\\tau$)" if TType == "Years" else "Days to Expiration ($\\tau$)",
-                min_value = 0 if TType == "Days" else 0.0, 
-                max_value = n_exp_years * days_per_year if TType == "Days" else float(n_exp_years), 
-                value = 30 if TType == "Days" else n_exp_years / 2, 
-                step = 1 if TType == "Days" else 0.10, 
+                label = "Days to Expiration ($t$)", #if TType == "Years" else "Days to Expiration ($t$)",
+                min_value = 0, #if TType == "Days" else 0.0, 
+                max_value = n_exp_years * days_per_year, #if TType == "Days" else float(n_exp_years), 
+                value = 30, #if TType == "Days" else n_exp_years / 2, 
+                step = 1, #if TType == "Days" else 0.10, 
+                format = "%d",
                 key = "slider-exp", 
-                help = None  #TODO decir que tienen que ser "natural day" 
+                help = "Natural days left until maturity" 
             )
-            if TType == "Days": 
-                T = T / 365
-        with col3:
+            # if TType == "Days": 
+            T = T / days_per_year
+        with col2:
             # Volatilty Slider 
             v = st.slider(
                 label =  "Volatility (%) ($\\sigma$)", 
