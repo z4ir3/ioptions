@@ -187,46 +187,39 @@ def dbpage_pricing(
         with col4:
             atmprice = st.selectbox(
                 label = "Moneyness",
-                options = ["ATM","ITM","OTM"], #"Custom Underlying"],
+                options = ["ATM Option (K=S)","Choose Underlying"], #"Custom Underlying"],
                 index = 0,
                 # help = "Enter a custom Underlying or let $S = K$ (ATM Option)"
             )
         # if atmprice is not None:
         with col5:
-            if atmprice == "ITM" and cp == "Call":
-                helpmsg = "Enter a price $S > K$"
-            elif atmprice == "OTM" and cp == "Call":
-                helpmsg = "Enter a price $S < K$"
-            elif atmprice == "ITM" and cp == "Put":
-                helpmsg = "Enter a price $S < K$"
-            elif atmprice == "OTM" and cp == "Put":
-                helpmsg = "Enter a price $S > K$"
+            if atmprice == "Choose Underlying":
+                if cp == "Call":
+                    helpmsg = "Enter $S > K$ for ITM Call, or $K < S$ for OTM Call"
+                else:
+                    helpmsg = "Enter $S < K$ for ITM Put, or $K > S$ for OTM Put"
             else:
                 helpmsg = None
-            SS = st.number_input(
+            underlying_moneyness = st.number_input(
                 label = "Enter $S$",
                 min_value = 0.0,
                 max_value = None,
                 format = "%f",
-                value = K, #if atmprice == "ATM" else None,
+                value = K,
                 help = helpmsg,
-                disabled = True if atmprice == "ATM" else False
+                disabled = True if atmprice == "ATM Option (K=S)" else False
             )
 
-        # Main calculations 
+            # Calculate moneyness 
+            if atmprice == "ATM Option (K=S)":
+                moneyness = "ATM"
+            else:
+                if cp == "Call":
+                    moneyness = "ITM" if underlying_moneyness > K else "OTM"
+                else:
+                    moneyness = "ITM" if underlying_moneyness < K else "OTM"
 
-
-
-        # from models.normaldist import Normal
-        # N = Normal()
-        # st.write( N.pdf(1.2) )
-        # st.write( N.cdf(1.2) )
-
-        # st.write( Normal.pdf(1.2) )
-        # st.write( Normal.cdf(1.2) )
-
-
-        # st.divider()
+        # Main calculations
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
