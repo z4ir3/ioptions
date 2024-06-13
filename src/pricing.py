@@ -6,6 +6,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+from typing import Optional
+
 import matplotlib.pyplot as plt
 
 import plotly.io as pio
@@ -634,7 +636,7 @@ def _iplot_sens(
     K: float,
     lcol: str,    
     moneyness: str,
-    sval: tuple | None = None,
+    sval: Optional[tuple] = None,
     yaxside: str = "left",
     gridcolor: str = "#EEF4F4",
     xlab: bool = False
@@ -756,7 +758,7 @@ def _iplot_all_sensitivities(
     K: float,
     lcol: str,    
     moneyness: str,
-    sval: tuple | None = None,
+    sval: Optional[tuple] = None,
     yaxside: str = "left",
     gridcolor: str = "#EEF4F4",
     xlab: bool = False
