@@ -511,195 +511,252 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s}",
+                            value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
 
-
-
-
-
-
-
-
-        """
-        for idx, s in enumerate(total_tabs):
-            match s:
-                # case "The Model":
-                #     if ostyle == "European" and underlying_type == "Stock":
-                #         desc = r'''Black-Scholes pricing model C = Se^{-qt}'''
-                #     elif underlying_type == "Index":
-                #         desc = "Black '76 pricing model"
-                #     elif ostyle == "American":
-                #         desc = "Binomial-Tree Model (Cox-Ross-Rubinstein) pricing model"
-                case "Price":
-                    desc = r'''
-                    C = Se^{-qt}\Phi(d_1) - Ke^{-rt}\Phi(d_2)
-                    \quad\text{where}\quad
-                    d_1 = \frac{\ln(S/K)+(r-q-\sigma^2/2)t}{\sigma\sqrt{t}}
-                    \quad\text{and}\quad
-                    d_2 = d_1 - \sigma\sqrt{t}
-                    '''
-                case "Delta":
-                    desc = r'''
-                    \text{First derivative of the price with respect to the Underlying Price:}
-                    \;\,
-                    \Delta = \frac{\partial C}{\partial S} = e^{-qt}\Phi(d_1)
-                    '''
-                case "Gamma":
-                    desc = r'''
-                    \text{Second derivative of the price with respect to the Underlying Price:}
-                    \;\,
-                    \Gamma = \frac{\partial^2 C}{\partial S^2} = \frac{e^{-qt}\phi(d_1)}{2\sigma\sqrt{t}}
-                    '''
-                case "Vega":
-                    desc = r'''
-                    \text{First derivative of the price with respect to the Implied Volatility:}
-                    \;\,
-                    \kappa = \frac{\partial C}{\partial \sigma} = S e^{-qt} \phi(d_1) \sqrt{t}
-                    '''
-                case "Theta":
-                    desc = r'''
-                    \text{First derivative of the price with respect to the time to maturity:}
-                    \;\,
-                    \theta = \frac{\partial C}{\partial t} 
-                    = -\frac{S\sigma e^{-qt}}{2\sqrt{t}}\phi(d_1) 
-                    - r K e^{-rt}\Phi(d_2)
-                    + q S e^{-qt}\Phi(d_1)
-                    '''                
-                case "Rho":
-                    desc = r'''
-                    \rho = \frac{\partial C}{\partial r} = K t e^{-rt} \Phi(d_2)
-                    '''  
-                case "All Sensitivities":
-                    desc = "" 
+        # Plot of each sensitivity in each tab  
+        for idx, s in enumerate(total_tabs[:-1]):
+            # if s == "Price":
             with tabs[idx]:
-                # if s == "The Model":
-                #     st.subheader(desc)
-                #     st.latex(desc)
-                if s != "All Sensitivities":
-                    col1, col2 = st.columns([6,1])
-                    with col1:
-                        # st.subheader(f"{cp} " + s)
-                        st.subheader("First derivative of the price with respect to the interest rate")
-                        st.latex(desc)
-                        # if s == "Delta":
-                        #     st.
-                    with col2:
-                        st.subheader("")
-                        st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
-                            help = None
-                        )
-        """
-
-
-
-
-
-        # Save ATM points for metric and to be passed in plot functions
-        ATM = {k: dict() for k in sensname}
-        with st.container():
-            atms = st.columns(len(sensname))        
-            for idx, s in enumerate(sensname):
-                # Save ATM points
-                atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - K)))
-                ATM[s]["x"] = [Sens[s].index[atmidx]]
-                ATM[s]["y"] = [Sens[s].values[atmidx]]
-                with atms[idx]:
-                    st.metric(
-                        label = f"ATM {s}",
-                        value = f"{ATM[s]['y'][0]:.3f}",
-                        help = None
-                    )
-
-        # Price and Delta
-        with st.container():
-            plot1, plot2 = st.columns(2) #[1,1,1], gap="small") 
-            with plot1:   
-                ss = "Price"
-                fig = _plotgreeks(
-                    Sens[ss], 
+                fig = _iplot_sens(
+                    Sens[s], 
                     CP, 
                     K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"], ATM[ss]["y"])
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            with plot2:
-                ss = "Delta"
-                fig = _plotgreeks(
-                    Sens[ss], 
-                    CP, 
-                    K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"], ATM[ss]["y"]),
-                    yaxside = "right"
-                )
-                st.plotly_chart(fig, use_container_width=True)
-
-        # Gamma and Vega
-        with st.container():
-            plot1, plot2 = st.columns(2)
-            with plot1:   
-                ss = "Gamma"
-                fig = _plotgreeks(
-                    Sens[ss], 
-                    CP, 
-                    K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"], ATM[ss]["y"])
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            with plot2:
-                ss = "Vega"
-                fig = _plotgreeks(
-                    Sens[ss], 
-                    CP, 
-                    K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"], ATM[ss]["y"]),
-                    yaxside = "right"
-                )
-                st.plotly_chart(fig, use_container_width=True)
-
-        # Theta and Rho
-        with st.container():
-            plot1, plot2 = st.columns(2)
-            with plot1: 
-                ss = "Theta"
-                fig = _plotgreeks(
-                    Sens[ss], 
-                    CP, 
-                    K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"],ATM[ss]["y"]),
-                    xlab = True
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            with plot2:
-                # ss = "Lambda"
-                ss = "Rho"
-                fig = _plotgreeks(
-                    Sens[ss], 
-                    CP, 
-                    K, 
-                    lcol = bscolors(ss),
-                    atmv = (ATM[ss]["x"],ATM[ss]["y"]),
+                    lcol = bscolors(s),
+                    moneyness = moneyness,
+                    sval = (Metric[s]["x"],Metric[s]["y"]),
                     yaxside = "right", 
                     xlab = True
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
+        # Plot of all sensitivities altogether 
+        with tabs[-1]:
+            
+            cols = st.columns(len(sensname))
+            for idx, s in enumerate(sensname):
+                with cols[idx]:                 
+                    st.metric(
+                        label = f"{moneyness} {s} (S={underlying_moneyness})",
+                        value = f"{Metric[s]['y'][0]:.3f}",
+                        help = None
+                    )
 
-def _plotgreeks(
+            # Price and Delta
+            with st.container():
+                plot1, plot2 = st.columns(2)
+                with plot1:   
+                    ss = "Price"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"], Metric[ss]["y"])
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                with plot2:
+                    ss = "Delta"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"], Metric[ss]["y"]),
+                        yaxside = "right"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+            # Gamma and Vega
+            with st.container():
+                plot1, plot2 = st.columns(2)
+                with plot1:   
+                    ss = "Gamma"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"], Metric[ss]["y"])
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                with plot2:
+                    ss = "Vega"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"], Metric[ss]["y"]),
+                        yaxside = "right"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+            # Theta and Rho
+            with st.container():
+                plot1, plot2 = st.columns(2)
+                with plot1: 
+                    ss = "Theta"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"],Metric[ss]["y"]),
+                        xlab = True
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                with plot2:
+                    ss = "Rho"
+                    fig = _iplot_all_sensitivities(
+                        Sens[ss], 
+                        CP, 
+                        K, 
+                        lcol = bscolors(ss),
+                        moneyness = moneyness,
+                        sval = (Metric[ss]["x"],Metric[ss]["y"]),
+                        yaxside = "right", 
+                        xlab = True
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+
+def _iplot_sens(
     data: pd.Series,
     CP: str,
     K: float,
     lcol: str,    
-    atmv: tuple | None = None,
+    moneyness: str,
+    sval: tuple | None = None,
+    yaxside: str = "left",
+    gridcolor: str = "#EEF4F4",
+    xlab: bool = False
+):
+    """
+    """
+    # Create figure
+    fig = go.Figure()
+    # Creating a first trace for the horizontal zero line
+    fig.add_trace(
+        go.Scatter(
+            x = data.index, 
+            y = np.repeat(0,len(data.index)), 
+            name = None, 
+            line_dash = "longdash",
+            line_color = "#C6C6C6",
+            line_width = 1,
+            showlegend = False,
+            hoverinfo = "none"
+        )
+    )
+    # Adding option data trace
+    fig.add_trace(
+        go.Scatter(
+            x = data.index,
+            y = data.values, 
+            name = data.name,
+            line = dict(
+                color = lcol,
+                width = 1.8, 
+                dash = "solid"
+            ),
+            showlegend = False
+        )
+    )
+    if data.name == "Price":
+        # Show the Price at maturity
+        price_at_mat = np.maximum(data.index - K, 0) if CP == "C" else np.maximum(K - data.index, 0)
+        fig.add_trace(
+            go.Scatter(
+                x = data.index,
+                y = price_at_mat, 
+                name = data.name + " at maturity",
+                line = dict(
+                    color = lcol,
+                    width = 1.2, 
+                    dash = "longdash"
+                ),
+                showlegend = True,
+                opacity = 0.8
+            )
+        )
+    # Label x-axis
+    if xlab:
+        xlabel = f"Underlying S (K={K})"
+    else:
+        xlabel = None
+    # Legend position
+    if (CP == "P") and (data.name in ["Price","Lambda"]):
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
+    elif (CP == "C") and (data.name == "Lambda"):
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
+    elif data.name == "Theta":
+        legpos = dict(yanchor = "bottom", y = 0.01, xanchor = "left", x = 0.01)
+    else: 
+        legpos = dict(yanchor = "top", y = 0.99, xanchor = "left", x = 0.01)
+    # Update layout
+    fig.update_layout(
+        # title = {"text": "", "font_size": 22},
+        xaxis = dict(title = xlabel),
+        yaxis = dict(title = f"{data.name}", side = yaxside),
+        hovermode = "x",  
+        hoverlabel = dict(
+            #bgcolor = "white",
+            font_size = 14,
+            # font_family = "Rockwell"
+        ),
+        autosize = True,
+        legend = legpos,
+        plot_bgcolor = "#E6E6E6",
+        legend_bgcolor = "#E6E6E6",
+        legend_font_color = "#000000",
+        legend_borderwidth = 0,
+        margin_pad = 0, 
+        width = 500,  # Specify the width of the plot in pixels
+        height = 500,  # Specify the height of the plot in pixels
+        margin = dict(l=0, r=0, t=32, b=0)  # Set margins around the plot
+    )
+    fig.update_xaxes(
+        # zeroline = False, # not working 
+        showgrid = True,
+        gridcolor = gridcolor
+    )
+    fig.update_yaxes(
+        showgrid = True,
+        gridcolor = gridcolor
+        # griddash="dot",
+        # title_standoff=100
+    )
+    # Plot a marker for the ATM data 
+    fig.add_trace(
+        go.Scatter(
+            x = sval[0],
+            y = sval[1], 
+            name = f"{moneyness} {data.name}",
+            marker = dict(
+                color = "black",
+                size = [10]
+            ),
+            showlegend = True 
+        )
+    )    
+    return fig
+
+
+def _iplot_all_sensitivities(
+    data: pd.Series,
+    CP: str,
+    K: float,
+    lcol: str,    
+    moneyness: str,
+    sval: tuple | None = None,
     yaxside: str = "left",
     gridcolor: str = "#EEF4F4",
     xlab: bool = False
@@ -741,7 +798,7 @@ def _plotgreeks(
         xlabel = f"Underlying S (K={K})"
     else:
         xlabel = None
-    # legend position
+    # Legend position
     if (CP == "P") and (data.name in ["Price","Lambda"]):
         legpos = dict(yanchor = "top", y = 0.99, xanchor = "right", x = 0.99)
     elif (CP == "C") and (data.name == "Lambda"):
@@ -786,14 +843,14 @@ def _plotgreeks(
     # Plot a marker for the ATM data 
     fig.add_trace(
         go.Scatter(
-            x = atmv[0],
-            y = atmv[1], 
-            name = f"ATM {data.name}",
+            x = sval[0],
+            y = sval[1], 
+            name = f"{moneyness} {data.name}",
             marker = dict(
                 color = "black",
                 size = [8]
             ),
-            showlegend = True #True
+            showlegend = True 
         )
     )    
     return fig
