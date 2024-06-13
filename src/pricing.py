@@ -234,11 +234,24 @@ def dbpage_pricing(
             else:
                 Options = [BlackPut(S=s, K=K, T=T, r=r, v=v) for s in uset]
 
+        # Generate sensitivity dictionary data
         Sens = dict()
         for s in sensname: 
-            # grk = [o.greeks(grk=s, rnd=rnd) for o in Options]
             grk = [o.greeks(grk=s) for o in Options]
             Sens[s] = pd.Series(grk, index=uset, name=s)
+
+        # Save ATM points or the points depending on the input Underlying Price 
+        # for metric and to be passed in plot functions
+        Metric = {k: dict() for k in sensname}
+        for idx, s in enumerate(sensname):
+            if atmprice == "ATM Option (K=S)":
+                # Save the Underlying Price at ATM, i.e., the nearest to K
+                atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - K)))
+            else:
+                # Save the input Underlying Price, i.e., 
+                atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - underlying_moneyness)))
+            Metric[s]["x"] = [Sens[s].index[atmidx]]
+            Metric[s]["y"] = [Sens[s].values[atmidx]]
 
         st.markdown('''
         <style>
@@ -250,7 +263,6 @@ def dbpage_pricing(
         unsafe_allow_html=True
         )
 
-        # total_tabs = ["The Model"] + sensname + ["All Sensitivities"]
         total_tabs = sensname + ["All Sensitivities"]
         tabs = st.tabs(total_tabs)
         cols_size = [7,1]
@@ -299,14 +311,14 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s} at S={underlying_moneyness}",
+                            value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
             elif s == "Delta":
                 with tabs[idx]:
                     st.subheader(f"First derivative of the {cp}'s price with respect to the Underlying Price")
-                    col1, col2 = st.columns(cols_size)
+                    col1, col2, col3 = st.columns(cols_size+[1])
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
                             # Black-Scholes Call
@@ -385,8 +397,8 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s}",
+                            value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
             elif s == "Vega":
@@ -417,8 +429,8 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s}",
+                            value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
             elif s == "Theta":
@@ -465,8 +477,8 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s}",
+                            value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
             elif s == "Rho":
