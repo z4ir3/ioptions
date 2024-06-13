@@ -151,7 +151,7 @@ def dbpage_pricing(
                 label = "Days to Expiration ($t$)", #if TType == "Years" else "Days to Expiration ($t$)",
                 min_value = 0, #if TType == "Days" else 0.0, 
                 max_value = n_exp_years * days_per_year, #if TType == "Days" else float(n_exp_years), 
-                value = 30, #if TType == "Days" else n_exp_years / 2, 
+                value = 90, #if TType == "Days" else n_exp_years / 2, 
                 step = 1, #if TType == "Days" else 0.10, 
                 format = "%d",
                 key = "slider-exp", 
