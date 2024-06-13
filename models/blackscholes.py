@@ -5,6 +5,8 @@ Black-Scholes option pricing model - European Stock Options
 import pandas as pd
 import numpy as np
 
+from typing import Optional
+
 from models.normaldist import Normal
 from models.utils import DotDict
 
@@ -183,7 +185,6 @@ class BlackScholesCall(BlackScholes):
     def greeks(
         self,
         grk: str | None = None
-        # rnd: int = 2
     ) -> dict:
         """
         Call greeks
@@ -374,7 +375,7 @@ class BlackScholesPut(BlackScholes):
     
     def greeks(
         self,
-        grk: str | None = None
+        grk: Optional[str] = None, #str | None = None
         # rnd: int = 2
     ) -> dict:
         """

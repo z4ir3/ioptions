@@ -5,6 +5,8 @@ Black '76 option pricing model - (European) Index Options
 import pandas as pd
 import numpy as np
 
+from typing import Optional
+
 from models.normaldist import Normal
 from models.utils import DotDict
 
@@ -357,8 +359,7 @@ class BlackPut(Black):
     
     def greeks(
         self,
-        grk: str | None = None
-        # rnd: int = 2
+        grk: Optional[str] = None
     ) -> dict:
         """
         Call greeks
