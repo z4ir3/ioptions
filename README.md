@@ -17,7 +17,7 @@ The app is currently hosted using [Streamlit's](streamlit.io) Sharing functional
 [Link to Project](https://black-scholes-options-playground.streamlit.app/)
 
 
-<img src="/data/images/app-pic-1.png" height="400" width="800">
+<img src="/data/images/app-pic-2.png" height="400" width="800">
 
 
 Please follow the links below for further details about option pricing:
