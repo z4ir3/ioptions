@@ -330,11 +330,21 @@ def dbpage_pricing(
                             '''
                         st.latex(desc)
                     with col2:
+                        _delta = Metric[s]['y'][0]
                         st.metric(
-                            label = f"ATM {s}",
-                            value = 222,
+                            label = f"{moneyness} {s}",
+                            value = f"{_delta:.3f}",
                             help = None
                         )
+
+                    with col3:
+                        cash_delta = _delta * underlying_moneyness
+                        st.metric(
+                            label = f"{moneyness} Cash {s}",
+                            value = f"{cash_delta:.3f}",
+                            help = "If Multiplied by 1%, represent the Price movement for +1% of the Underlying Price"
+                        )
+
             elif s == "Gamma":
                 with tabs[idx]:
                     st.subheader(f"Second derivative of the {cp}'s price with respect to the Underlying Price")
