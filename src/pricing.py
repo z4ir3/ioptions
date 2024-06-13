@@ -29,15 +29,15 @@ def dbpage_pricing(
     """
     # Page title
     st.title("Options Pricing Models")
-    # # Copyright
-    # st.markdown("""
-    #     <h6>An app made by  
-    #         <!-- <a href='https://github.com/z4ir3'> -->
-    #         <a href="http://leonardorocchi.info/">
-    #             <b>z4ir3</b>
-    #         </a>
-    #     </h6>
-    # """, unsafe_allow_html=True)
+    # Copyright
+    st.markdown("""
+        <h6>An app made by  
+            <!-- <a href='https://github.com/z4ir3'> -->
+            <a href="http://leonardorocchi.info/">
+                <b>z4ir3</b>
+            </a>
+        </h6>
+    """, unsafe_allow_html=True)
     # Hiding "Made with Streamlit message"
     st.write('''
         <style>
