@@ -167,8 +167,7 @@ class BlackCall(Black):
     
     def greeks(
         self,
-        grk: str | None = None
-        # rnd: int = 2
+        grk: Optional[str] = None
     ) -> dict:
         """
         Call greeks

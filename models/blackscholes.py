@@ -184,7 +184,7 @@ class BlackScholesCall(BlackScholes):
     
     def greeks(
         self,
-        grk: str | None = None
+        grk: Optional[str] = None
     ) -> dict:
         """
         Call greeks
@@ -375,8 +375,7 @@ class BlackScholesPut(BlackScholes):
     
     def greeks(
         self,
-        grk: Optional[str] = None, #str | None = None
-        # rnd: int = 2
+        grk: Optional[str] = None
     ) -> dict:
         """
         Call greeks
