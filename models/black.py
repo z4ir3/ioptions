@@ -21,7 +21,6 @@ class Black:
         T: float, 
         r: float, 
         v: float, 
-        q: float = 0
     ):
         """
         S: underlying Price 
