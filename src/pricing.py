@@ -136,30 +136,20 @@ def dbpage_pricing(
         
         # Rest of widgets: expiration, volatility, and interest rate
         col1, col2, col3, col4, col5 = st.columns([1.25,0.625,0.5,0.5,0.25], gap="small") 
-        # with col1:
-        #     pass
-        #     # # Expiration type
-        #     # TType = st.selectbox(
-        #     #     label = "Expiration type",
-        #     #     options = ["Days","Years"],
-        #     #     index = 0,
-        #     #     key = "dte-type"
-        #     # ) 
         with col1:
             # Expiration Slider 
             days_per_year = 365
             n_exp_years = 1
             T = st.slider(
-                label = "Days to Expiration ($t$)", #if TType == "Years" else "Days to Expiration ($t$)",
-                min_value = 0, #if TType == "Days" else 0.0, 
-                max_value = n_exp_years * days_per_year, #if TType == "Days" else float(n_exp_years), 
-                value = 90, #if TType == "Days" else n_exp_years / 2, 
-                step = 1, #if TType == "Days" else 0.10, 
+                label = "Days to Expiration ($t$)", 
+                min_value = 0,
+                max_value = n_exp_years * days_per_year,
+                value = 90,
+                step = 1,
                 format = "%d",
                 key = "slider-exp", 
                 help = "Natural days left until maturity" 
             )
-            # if TType == "Days": 
             T = T / days_per_year
         with col2:
             # Volatilty Slider 
@@ -189,9 +179,8 @@ def dbpage_pricing(
         with col4:
             atmprice = st.selectbox(
                 label = "Moneyness",
-                options = ["ATM Option (K=S)","Choose Underlying"], #"Custom Underlying"],
-                index = 0,
-                # help = "Enter a custom Underlying or let $S = K$ (ATM Option)"
+                options = ["ATM Option (K=S)","Choose Underlying"],
+                index = 0
             )
         # if atmprice is not None:
         with col5:
@@ -202,6 +191,7 @@ def dbpage_pricing(
                     helpmsg = "Enter $S < K$ for ITM Put, or $K > S$ for OTM Put"
             else:
                 helpmsg = None
+
             underlying_moneyness = st.number_input(
                 label = "Enter $S$",
                 min_value = 0.0,
@@ -211,7 +201,6 @@ def dbpage_pricing(
                 help = helpmsg,
                 disabled = True if atmprice == "ATM Option (K=S)" else False
             )
-
             # Calculate moneyness 
             if atmprice == "ATM Option (K=S)":
                 moneyness = "ATM"
