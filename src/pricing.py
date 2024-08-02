@@ -242,7 +242,7 @@ def dbpage_pricing(
                 # Save the input Underlying Price, i.e., 
                 atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - underlying_moneyness)))
             Metric[s]["x"] = [Sens[s].index[atmidx]]
-            Metric[s]["y"] = [Sens[s].values[atmidx]]
+            Metric[s]["y"] = [Sens[s].values[atmidx]] 
 
         st.markdown('''
         <style>
