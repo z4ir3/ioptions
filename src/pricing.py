@@ -64,12 +64,13 @@ def dbpage_pricing(
             )
         with col2:
             # Call or Put price
+            _ph = "Stock or Index Index" if ostyle == "European" else "Stock"
             isdisabled = True if ostyle == "American" else False
             underlying_type = st.selectbox(
                 label = "Underlying type",
                 options = ["Stock","Index"],
                 index = 0,
-                placeholder = "Stock or Index Index" if ostyle == "European" else "Stock",
+                placeholder = _ph,
                 disabled = isdisabled,
                 key = "underlying-style"
             )
@@ -100,6 +101,11 @@ def dbpage_pricing(
             ) 
         with col2:
             # Dividend Yield
+            _dis = (
+                True 
+                if (ostyle == "American" or underlying_type == "Index") 
+                else False
+            )
             q = st.number_input(
                 label = "Dividend Yield (%) ($q$)",
                 min_value = 0.0,
@@ -107,7 +113,7 @@ def dbpage_pricing(
                 format = "%f",
                 value = 0.0, #if ostyle == "European" else None,
                 help = "Annual dividend yield stock return",
-                disabled = True if (ostyle == "American" or underlying_type == "Index") else False,
+                disabled = _dis,
                 key = "div-yield"
             )
             q = q / 100
@@ -116,6 +122,7 @@ def dbpage_pricing(
     cd2 = underlying_type in {"Stock","Index"} 
     cd3 = cp in {"Call","Put"}
     cd4 = K is not None 
+
     if (cd1 and cd2 and cd3 and cd4):
 
         # Print of the model pricing used 
@@ -135,7 +142,9 @@ def dbpage_pricing(
                     return 0
         
         # Rest of widgets: expiration, volatility, and interest rate
-        col1, col2, col3, col4, col5 = st.columns([1.25,0.625,0.5,0.5,0.25], gap="small") 
+        col1, col2, col3, col4, col5 = (
+            st.columns([1.25, 0.625, 0.5, 0.5, 0.25], gap="small")
+        ) 
         with col1:
             # Expiration Slider 
             days_per_year = 365
@@ -186,11 +195,11 @@ def dbpage_pricing(
         with col5:
             if atmprice == "Choose Underlying":
                 if cp == "Call":
-                    helpmsg = "Enter $S > K$ for ITM Call, or $K < S$ for OTM Call"
+                    _hm = "Enter $S > K$ for ITM Call, or $S > K$ for OTM Call"
                 else:
-                    helpmsg = "Enter $S < K$ for ITM Put, or $K > S$ for OTM Put"
+                    _hm = "Enter $S < K$ for ITM Put, or $S < K$ for OTM Put"
             else:
-                helpmsg = None
+                _hm = None
 
             underlying_moneyness = st.number_input(
                 label = "Enter $S$",
@@ -198,7 +207,7 @@ def dbpage_pricing(
                 max_value = None,
                 format = "%f",
                 value = K,
-                help = helpmsg,
+                help = _hm,
                 disabled = True if atmprice == "ATM Option (K=S)" else False
             )
             # Calculate moneyness 
@@ -214,11 +223,19 @@ def dbpage_pricing(
 
         # Set up Options
         uset = np.linspace(get_Smin(K),get_Smax(K),nss)
+
         if (ostyle == "European") and (underlying_type == "Stock"):
             if CP == "C":
-                Options = [BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+                Options = [
+                    BlackScholesCall(S=s, K=K, T=T, r=r, v=v, q=q) 
+                    for s in uset
+                ]
             else:
-                Options = [BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) for s in uset]
+                Options = [
+                    BlackScholesPut(S=s, K=K, T=T, r=r, v=v, q=q) 
+                    for s in uset
+                ]
+
         elif (ostyle == "European") and (underlying_type == "Index"):
             if CP == "C":
                 Options = [BlackCall(S=s, K=K, T=T, r=r, v=v) for s in uset]
@@ -237,10 +254,16 @@ def dbpage_pricing(
         for idx, s in enumerate(sensname):
             if atmprice == "ATM Option (K=S)":
                 # Save the Underlying Price at ATM, i.e., the nearest to K
-                atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - K)))
+                atmidx = np.argmin(
+                    pd.Series(Sens[s].index).apply(lambda x: abs(x - K))
+                )
             else:
                 # Save the input Underlying Price, i.e., 
-                atmidx = np.argmin(pd.Series(Sens[s].index).apply(lambda x: abs(x - underlying_moneyness)))
+                atmidx = np.argmin(
+                    pd.Series(Sens[s].index)
+                    .apply(lambda x: abs(x - underlying_moneyness))
+                )
+
             Metric[s]["x"] = [Sens[s].index[atmidx]]
             Metric[s]["y"] = [Sens[s].values[atmidx]] 
 
@@ -258,6 +281,8 @@ def dbpage_pricing(
         tabs = st.tabs(total_tabs)
         cols_size = [7,1]
         for idx, s in enumerate(total_tabs):
+
+            # Price
             if s == "Price":
                 with tabs[idx]:
                     st.subheader(f"{cp} " + s)
@@ -306,6 +331,7 @@ def dbpage_pricing(
                             value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
+
             elif s == "Delta":
                 with tabs[idx]:
                     st.subheader(f"First derivative of the {cp}'s price with respect to the Underlying Price")
