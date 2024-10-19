@@ -195,13 +195,13 @@ def dbpage_pricing(
         with col5:
             if atmprice == "Choose Underlying":
                 if cp == "Call":
-                    _hm = "Enter $S > K$ for ITM Call, or $S > K$ for OTM Call"
+                    _hm = "Enter $S > K$ for ITM Call, or $S < K$ for OTM Call"
                 else:
-                    _hm = "Enter $S < K$ for ITM Put, or $S < K$ for OTM Put"
+                    _hm = "Enter $S < K$ for ITM Put, or $S > K$ for OTM Put"
             else:
                 _hm = None
 
-            underlying_moneyness = st.number_input(
+            underl_moneyness = st.number_input(
                 label = "Enter $S$",
                 min_value = 0.0,
                 max_value = None,
@@ -215,9 +215,9 @@ def dbpage_pricing(
                 moneyness = "ATM"
             else:
                 if cp == "Call":
-                    moneyness = "ITM" if underlying_moneyness > K else "OTM"
+                    moneyness = "ITM" if underl_moneyness > K else "OTM"
                 else:
-                    moneyness = "ITM" if underlying_moneyness < K else "OTM"
+                    moneyness = "ITM" if underl_moneyness < K else "OTM"
 
         # Main calculations
 
@@ -261,7 +261,7 @@ def dbpage_pricing(
                 # Save the input Underlying Price, i.e., 
                 atmidx = np.argmin(
                     pd.Series(Sens[s].index)
-                    .apply(lambda x: abs(x - underlying_moneyness))
+                    .apply(lambda x: abs(x - underl_moneyness))
                 )
 
             Metric[s]["x"] = [Sens[s].index[atmidx]]
@@ -285,7 +285,9 @@ def dbpage_pricing(
             # Price
             if s == "Price":
                 with tabs[idx]:
-                    st.subheader(f"{cp} " + s)
+                    # st.subheader(f"{cp} " + s)
+                    st.subheader(f"Option {cp} {s}")
+
                     col1, col2 = st.columns(cols_size)
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
@@ -327,20 +329,21 @@ def dbpage_pricing(
                         st.latex(desc)
                     with col2:
                         st.metric(
-                            label = f"{moneyness} {s} at S={underlying_moneyness}",
+                            label = f"{moneyness} {s} at S={underl_moneyness}",
                             value = f"{Metric[s]['y'][0]:.3f}",
                             help = None
                         )
 
             elif s == "Delta":
                 with tabs[idx]:
-                    st.subheader(f"First derivative of the {cp}'s price with respect to the Underlying Price")
+                    st.subheader(f"{s}: First derivative of the {cp}'s price with respect to the Underlying Price")
+                    
                     col1, col2, col3 = st.columns(cols_size+[1])
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
                             # Black-Scholes Call
                             desc = r'''
-                            \Delta = \frac{\partial C}{\partial S} = e^{-qt}\Phi(d_1)
+                            \Delta := \frac{\partial C}{\partial S} = e^{-qt}\Phi(d_1)
                             '''
                         elif (underlying_type == "Stock") and (cp == "Put"):
                             # Black-Scholes Put
@@ -359,7 +362,7 @@ def dbpage_pricing(
                             '''
                         st.latex(desc)
                     with col2:
-                        _delta = Metric[s]['y'][0]
+                        _delta = Metric[s]["y"][0]
                         st.metric(
                             label = f"{moneyness} {s}",
                             value = f"{_delta:.3f}",
@@ -367,16 +370,21 @@ def dbpage_pricing(
                         )
 
                     with col3:
-                        cash_delta = _delta * underlying_moneyness
+                        cash_delta = _delta * underl_moneyness * 0.01
+                        _hp = '''
+                        It represents the monetary PnL
+                        due to +1% of the Underlying Price
+                        '''
                         st.metric(
                             label = f"{moneyness} Cash {s}",
                             value = f"{cash_delta:.3f}",
-                            help = "If Multiplied by 1%, represent the Price movement for +1% of the Underlying Price"
+                            help = _hp
                         )
 
             elif s == "Gamma":
                 with tabs[idx]:
-                    st.subheader(f"Second derivative of the {cp}'s price with respect to the Underlying Price")
+                    st.subheader(f"{s}: Second derivative of the {cp}'s price with respect to the Underlying Price")
+                    
                     col1, col2 = st.columns(cols_size)
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
@@ -420,7 +428,8 @@ def dbpage_pricing(
                         )
             elif s == "Vega":
                 with tabs[idx]:
-                    st.subheader(f"First derivative of the {cp}'s price with respect to the implied volatility")
+                    st.subheader(f"{s}: First derivative of the {cp}'s price with respect to the implied volatility")
+                    
                     col1, col2 = st.columns(cols_size)
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
@@ -452,7 +461,8 @@ def dbpage_pricing(
                         )
             elif s == "Theta":
                 with tabs[idx]:
-                    st.subheader(f"First derivative of the {cp}'s price with respect to the time to maturity")
+                    st.subheader(f"{s}: First derivative of the {cp}'s price with respect to the time to maturity")
+                    
                     col1, col2 = st.columns(cols_size)
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
@@ -500,7 +510,8 @@ def dbpage_pricing(
                         )
             elif s == "Rho":
                 with tabs[idx]:
-                    st.subheader(f"First derivative of the {cp}'s price with respect to the interest rate")
+                    st.subheader(f"{s}: First derivative of the {cp}'s price with respect to the interest rate")
+                    
                     col1, col2 = st.columns(cols_size)
                     with col1:
                         if (underlying_type == "Stock") and (cp == "Call"):
@@ -556,7 +567,7 @@ def dbpage_pricing(
             for idx, s in enumerate(sensname):
                 with cols[idx]:                 
                     st.metric(
-                        label = f"{moneyness} {s} (S={underlying_moneyness})",
+                        label = f"{moneyness} {s} (S={underl_moneyness})",
                         value = f"{Metric[s]['y'][0]:.3f}",
                         help = None
                     )
